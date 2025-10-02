@@ -1,0 +1,3 @@
+[submodule "sqlite-schema-diagram"]
+	path = sqlite-schema-diagram
+	url = ./sqlite-schema-diagram/
