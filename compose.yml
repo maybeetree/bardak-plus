@@ -1,0 +1,23 @@
+services:
+  dev:
+    init: true
+    image: compose-bases-void-rust
+    #build:
+    #  dockerfile_inline: |
+    #    FROM void-rust
+
+    #  additional_contexts:
+    #    void-rust: service:void-rust
+
+    volumes:
+      - /dev/null:/play/compose.yml:ro
+      #- .:/play
+      - type: bind
+        source: .
+        target: /play
+
+
+    working_dir: /play
+    stdin_open: true
+    tty: true
+    command: sleep 999999999
