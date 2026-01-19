@@ -1,7 +1,6 @@
-use sqlite::ConnectionThreadSafe;
 use sqlite::Connection;
+use sqlite::ConnectionThreadSafe;
 use sqlite::Error;
-use sqlite::State;
 
 //use crate::schema::PostRecord;
 //use crate::schema::GetTop;
@@ -21,93 +20,3 @@ const INIT_QUERY: &str = include_str!("../init.sql");
 pub fn init_db(conn: &ConnectionThreadSafe) -> Result<(), Error> {
     conn.execute(INIT_QUERY)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
