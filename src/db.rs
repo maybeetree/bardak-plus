@@ -20,3 +20,4 @@ const INIT_QUERY: &str = include_str!("../init.sql");
 pub fn init_db(conn: &ConnectionThreadSafe) -> Result<(), Error> {
     conn.execute(INIT_QUERY)
 }
+

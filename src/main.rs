@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::app::App;
 mod app;
 mod db;
+mod config;
 
 #[tokio::main]
 async fn main() {

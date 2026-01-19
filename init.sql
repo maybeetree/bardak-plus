@@ -52,13 +52,4 @@ inner join attr on attr.name = item_attr.attr_name
 where desc like '%banana%'
 ;
 
-# TODO shorthand for explicitly defined foreign key?
-# TODO on update and on delete can be used to delete
-# referenced items automatically?
-
-# changing the value of an attr
-# doesnt change the attr enty itself,
-# it creates a new attr and changes item->attr association
-
-# tags are just attrs with null value
 

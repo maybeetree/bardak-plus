@@ -1,7 +1,8 @@
 services:
   dev:
     init: true
-    image: compose-bases-void-rust
+    #image: compose-bases-void-rust
+    image: bardak-plus
     #build:
     #  dockerfile_inline: |
     #    FROM void-rust
@@ -15,6 +16,9 @@ services:
       - type: bind
         source: .
         target: /play
+
+    ports:
+      - 3030:3030
 
 
     working_dir: /play
