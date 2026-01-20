@@ -75,13 +75,17 @@ pub async fn get_latest_items(
         ) -> Result<schema::ResponseGetLatestItems, sqlx::Error> {
     let rows = sqlx::query!(
         r#"
-SELECT item.id AS item_id, attr.val AS attr_val, attr.name AS attr_name
-FROM item
-INNER JOIN item_attr ON item.id = item_attr.item_id
+WITH litem AS (
+    SELECT id
+    FROM item
+    ORDER BY created
+    LIMIT ?1 OFFSET ?2
+)
+SELECT id AS item_id, attr.val AS attr_val, attr.name AS attr_name FROM litem
+INNER JOIN item_attr ON litem.id = item_attr.item_id
 INNER JOIN attr ON attr.name = item_attr.attr_name
 	AND attr.val = item_attr.attr_val
-ORDER BY item.created
-LIMIT ?1 OFFSET ?2
+ORDER BY item_attr.item_id, attr.name;
 ;
 "#,
     payload.limit,
@@ -90,8 +94,6 @@ LIMIT ?1 OFFSET ?2
     .fetch_all(pool)
     .await?;
 
-    // TODO fix copypasta
-    
     // TODO assume that correct group by item?
     // or
     // TODO preallocate??

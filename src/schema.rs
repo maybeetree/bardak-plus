@@ -45,7 +45,7 @@ pub struct ResponseGetLatestItemsInner {
 }
 
 fn default_limit() -> i64 {
-    4
+    100
 }
 
 fn default_offset() -> i64 {

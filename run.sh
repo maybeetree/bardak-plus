@@ -15,6 +15,15 @@ cd_ass() {
 	cd "$1" || die "Failed to cd into ${2:-$1}"
 }
 
+echo
+echo
+echo
+echo
+echo
+echo
+echo
+echo
+
 export DATABASE_URL="sqlite:bardak.sqlite"
 export RUST_LOG=warp=debug,hyper=debug
 
