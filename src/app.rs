@@ -40,7 +40,7 @@ impl App {
                     async move { app.hello().await }
                 })
             ).or(
-                warp::path!("latest-rows")
+                warp::path("latest-rows")
                 .and(warp::get())
                 .and(warp::query::<schema::GetLatestRows>())
                 .and_then(move |payload| {
@@ -48,7 +48,7 @@ impl App {
                     async move { app.get_latest_rows(payload).await }
                 })
             ).or(
-                warp::path!("latest-items")
+                warp::path("latest-items")
                 .and(warp::get())
                 .and(warp::query::<schema::GetLatestItems>())
                 .and_then(move |payload| {
