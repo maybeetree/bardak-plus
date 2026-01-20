@@ -30,6 +30,7 @@ impl App {
     pub async fn run(self: Arc<Self>) {
         let app = self.clone();
         let app2 = self.clone();  // TODO
+        let app3 = self.clone();  // TODO
         //println!("database file: {}", config.database);
 
         warp::serve(
@@ -45,6 +46,14 @@ impl App {
                 .and_then(move |payload| {
                     let app = app2.clone();
                     async move { app.get_latest_rows(payload).await }
+                })
+            ).or(
+                warp::path!("latest-items")
+                .and(warp::get())
+                .and(warp::query::<schema::GetLatestItems>())
+                .and_then(move |payload| {
+                    let app = app3.clone();
+                    async move { app.get_latest_items(payload).await }
                 })
             )
         )
@@ -78,6 +87,25 @@ impl App {
         // so we need to have indirection.
 
         Ok(match db::get_latest_rows(&self.pool, &payload).await {
+            Ok(v) => Box::new(with_status(
+                warp::reply::json(&v),
+                StatusCode::OK
+                )),
+            Err(e) => Box::new(with_status(
+                format!("{:#?}", e),
+                StatusCode::INTERNAL_SERVER_ERROR
+                )),
+        })
+    }
+
+    pub async fn get_latest_items(
+            self: Arc<Self>,
+            payload: schema::GetLatestItems,
+        ) -> Result<Box<dyn warp::Reply>, Infallible> {
+
+        // TODO fix copypasta
+
+        Ok(match db::get_latest_items(&self.pool, &payload).await {
             Ok(v) => Box::new(with_status(
                 warp::reply::json(&v),
                 StatusCode::OK
