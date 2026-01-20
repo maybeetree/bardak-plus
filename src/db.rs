@@ -29,19 +29,40 @@ pub async fn init_db(pool: &SqlitePool) -> Result<SqliteQueryResult, sqlx::Error
 }
 
 
-pub async fn get_latest(
+pub async fn get_latest_rows(
         pool: &SqlitePool,
-        payload: &schema::GetLatest,
-        ) -> Result<schema::ResponseGetLatest, sqlx::Error> {
+        payload: &schema::GetLatestRows,
+        ) -> Result<schema::ResponseGetLatestRows, sqlx::Error> {
     let top = sqlx::query!(
-        r#"SELECT id, created FROM item"#,
+        r#"
+SELECT item.id AS id, attr.val AS attr_val, attr.name AS attr_name
+FROM item
+INNER JOIN item_attr ON item.id = item_attr.item_id
+INNER JOIN attr ON attr.name = item_attr.attr_name
+	AND attr.val = item_attr.attr_val
+ORDER BY item.created
+LIMIT ?1 OFFSET ?2
+;
+"#,
+    payload.limit,
+    payload.offset
     )
     .fetch_all(pool)
     .await?;
 
-    Ok(schema::ResponseGetLatest{
+    // TODO pagination is more difficult than this
+    // e.g. cursors to manage mutating data and large offsets
+
+    Ok(schema::ResponseGetLatestRows{
         top: top.into_iter().map(
-            |row| { schema::ResponseGetLatestInner { id: row.id } }
+            |row| { schema::ResponseGetLatestRowsInner {
+                item_id: row.id
+                    .expect("id should not be null"),
+                attr_name: row.attr_name
+                    .expect("attr_name should not be null"),
+                attr_val: row.attr_val
+                    .expect("attr_val should not be null"),
+            } } // TODO check unwraps
             ).collect()
     })
 }

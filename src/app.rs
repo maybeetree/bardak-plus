@@ -39,12 +39,12 @@ impl App {
                     async move { app.hello().await }
                 })
             ).or(
-                warp::path!("latest")
+                warp::path!("latest-rows")
                 .and(warp::get())
-                .and(warp::query::<schema::GetLatest>())
+                .and(warp::query::<schema::GetLatestRows>())
                 .and_then(move |payload| {
                     let app = app2.clone();
-                    async move { app.get_latest(payload).await }
+                    async move { app.get_latest_rows(payload).await }
                 })
             )
         )
@@ -66,9 +66,9 @@ impl App {
         )
     }
 
-    pub async fn get_latest(
+    pub async fn get_latest_rows(
             self: Arc<Self>,
-            payload: schema::GetLatest,
+            payload: schema::GetLatestRows,
         ) -> Result<Box<dyn warp::Reply>, Infallible> {
 
         // Here the response type is Box because
@@ -77,7 +77,7 @@ impl App {
         // which have different sizes
         // so we need to have indirection.
 
-        Ok(match db::get_latest(&self.pool, &payload).await {
+        Ok(match db::get_latest_rows(&self.pool, &payload).await {
             Ok(v) => Box::new(with_status(
                 warp::reply::json(&v),
                 StatusCode::OK
