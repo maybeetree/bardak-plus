@@ -8,6 +8,7 @@ use warp::http::StatusCode;
 use crate::config::Config;
 use crate::db;
 use crate::schema;
+use crate::filters;
 use conf::Conf;
 
 pub struct App {
@@ -28,33 +29,29 @@ impl App {
     }
 
     pub async fn run(self: Arc<Self>) {
-        let app = self.clone();
-        let app2 = self.clone();  // TODO
-        let app3 = self.clone();  // TODO
-        //println!("database file: {}", config.database);
+        let app1 = self.clone();
+        let app2 = self.clone();
+        let app3 = self.clone();
 
         warp::serve(
             (
-                warp::path::end().and_then(move || {
-                    let app = app.clone();
-                    async move { app.hello().await }
-                })
+                warp::path::end()
+                .and_then(
+                    async || {
+                        app1.clone().hello().await
+                    }
+                )
             ).or(
-                warp::path("latest-rows")
-                .and(warp::get())
-                .and(warp::query::<schema::GetLatestRows>())
-                .and_then(move |payload| {
-                    let app = app2.clone();
-                    async move { app.get_latest_rows(payload).await }
-                })
+                filters::latest_rows
             ).or(
                 warp::path("latest-items")
                 .and(warp::get())
                 .and(warp::query::<schema::GetLatestItems>())
-                .and_then(move |payload| {
-                    let app = app3.clone();
-                    async move { app.get_latest_items(payload).await }
-                })
+                .and_then(
+                    async move |req| {
+                        app3.clone().get_latest_items(req).await
+                    }
+                )
             )
         )
         .run(([0, 0, 0, 0], 3030))
@@ -73,29 +70,6 @@ impl App {
                 env!("CARGO_PKG_REPOSITORY"),
             ).to_string()
         )
-    }
-
-    pub async fn get_latest_rows(
-            self: Arc<Self>,
-            payload: schema::GetLatestRows,
-        ) -> Result<Box<dyn warp::Reply>, Infallible> {
-
-        // Here the response type is Box because
-        // there are two possible responses
-        // warp::reply::json and String
-        // which have different sizes
-        // so we need to have indirection.
-
-        Ok(match db::get_latest_rows(&self.pool, &payload).await {
-            Ok(v) => Box::new(with_status(
-                warp::reply::json(&v),
-                StatusCode::OK
-                )),
-            Err(e) => Box::new(with_status(
-                format!("{:#?}", e),
-                StatusCode::INTERNAL_SERVER_ERROR
-                )),
-        })
     }
 
     pub async fn get_latest_items(
