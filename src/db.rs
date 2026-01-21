@@ -31,7 +31,7 @@ pub async fn init_db(pool: &SqlitePool) -> Result<SqliteQueryResult, sqlx::Error
 }
 
 
-pub async fn get_latest_rows(
+pub async fn latest_rows(
         pool: &SqlitePool,
         payload: &schema::GetLatestRows,
         ) -> Result<schema::ResponseGetLatestRows, sqlx::Error> {
@@ -69,7 +69,7 @@ LIMIT ?1 OFFSET ?2
     })
 }
 
-pub async fn get_latest_items(
+pub async fn latest_items(
         pool: &SqlitePool,
         payload: &schema::GetLatestItems,
         ) -> Result<schema::ResponseGetLatestItems, sqlx::Error> {

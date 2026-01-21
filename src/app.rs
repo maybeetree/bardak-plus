@@ -29,67 +29,11 @@ impl App {
     }
 
     pub async fn run(self: Arc<Self>) {
-        let app1 = self.clone();
-        let app2 = self.clone();
-        let app3 = self.clone();
-
-        warp::serve(
-            (
-                warp::path::end()
-                .and_then(
-                    async || {
-                        app1.clone().hello().await
-                    }
-                )
-            ).or(
-                filters::latest_rows
-            ).or(
-                warp::path("latest-items")
-                .and(warp::get())
-                .and(warp::query::<schema::GetLatestItems>())
-                .and_then(
-                    async move |req| {
-                        app3.clone().get_latest_items(req).await
-                    }
-                )
-            )
-        )
+        warp::serve(filters::root(self.clone()))
         .run(([0, 0, 0, 0], 3030))
         .await;
     }
 
-    async fn hello(&self) -> Result<String, warp::Rejection> {
-        Ok(
-            format!(
-                "Hello! I am {} version {}. \
-                I am licensed under {}, \
-                and my source code is at {}.",
-                env!("CARGO_PKG_NAME"),
-                env!("CARGO_PKG_VERSION"),
-                env!("CARGO_PKG_LICENSE"),
-                env!("CARGO_PKG_REPOSITORY"),
-            ).to_string()
-        )
-    }
-
-    pub async fn get_latest_items(
-            self: Arc<Self>,
-            payload: schema::GetLatestItems,
-        ) -> Result<Box<dyn warp::Reply>, Infallible> {
-
-        // TODO fix copypasta
-
-        Ok(match db::get_latest_items(&self.pool, &payload).await {
-            Ok(v) => Box::new(with_status(
-                warp::reply::json(&v),
-                StatusCode::OK
-                )),
-            Err(e) => Box::new(with_status(
-                format!("{:#?}", e),
-                StatusCode::INTERNAL_SERVER_ERROR
-                )),
-        })
-    }
 
 
 }
