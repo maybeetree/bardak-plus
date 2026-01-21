@@ -1,13 +1,8 @@
 use sqlx::sqlite::SqlitePool;
 
-use std::convert::Infallible;
 use std::sync::Arc;
-use warp::Filter;
-use warp::reply::with_status;
-use warp::http::StatusCode;
 use crate::config::Config;
 use crate::db;
-use crate::schema;
 use crate::filters;
 use conf::Conf;
 

@@ -1,13 +1,11 @@
 use sqlx::sqlite::SqlitePool;
-use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::sqlite::SqliteQueryResult;
 use std::env;
-use std::collections::HashMap;
 use itertools::Itertools;
 
 use crate::schema;
 
-pub async fn get_db(filename: &str) -> Result<SqlitePool, sqlx::Error> {
+pub async fn get_db(_filename: &str) -> Result<SqlitePool, sqlx::Error> {
     //let options = SqliteConnectOptions::new()
     //    .filename(filename)
     //    .create_if_missing(true);

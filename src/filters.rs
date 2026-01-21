@@ -19,7 +19,7 @@ pub fn root(
 }
 
 pub fn hello(
-    app: Arc<App>,
+    _app: Arc<App>,
 ) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone {
     warp::path::end()
         .and(warp::get())
