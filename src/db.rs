@@ -1,9 +1,7 @@
 use sqlx::sqlite::SqlitePool;
 use sqlx::Row;
-use sqlx::sqlite::SqliteQueryResult;
 use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::migrate::MigrateError;
-use std::env;
 use itertools::Itertools;
 
 use crate::schema;
@@ -15,23 +13,10 @@ pub async fn get_db(filename: &str) -> Result<SqlitePool, sqlx::Error> {
 
     let pool = SqlitePool::connect_with(options).await?;
     init_db(&pool).await?;
-    //TODO
-    //let pool = SqlitePool::connect(&env::var("DATABASE_URL").unwrap()).await?;
     Ok(pool)
 }
 
-// const INIT_QUERY: &str = include_str!("../migrations/20240430231622_init.up.sql");
-//
-//pub async fn init_db(pool: &SqlitePool) -> Result<SqliteQueryResult, sqlx::Error> {
 pub async fn init_db(pool: &SqlitePool) -> Result<(), MigrateError> {
-    //let mut conn = pool.acquire().await?;
-    //    .expect("Error running DB migrations");
-    //sqlx::query(
-    //    INIT_QUERY
-    //)
-    //    .execute(&mut *conn)
-    //    .await
-
     sqlx::migrate!()
         .run(pool)
         .await
