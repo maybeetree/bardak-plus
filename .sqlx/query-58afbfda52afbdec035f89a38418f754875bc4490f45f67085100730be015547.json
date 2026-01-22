@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "\nSELECT item.id AS id, attr.val AS attr_val, attr.name AS attr_name\nFROM item\nINNER JOIN item_attr ON item.id = item_attr.item_id\nINNER JOIN attr ON attr.name = item_attr.attr_name\n\tAND attr.val = item_attr.attr_val\nORDER BY item.created\nLIMIT ?1 OFFSET ?2\n;\n",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "attr_val",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "attr_name",
+        "ordinal": 2,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "58afbfda52afbdec035f89a38418f754875bc4490f45f67085100730be015547"
+}

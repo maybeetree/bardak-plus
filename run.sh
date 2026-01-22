@@ -24,11 +24,10 @@ echo
 echo
 echo
 
-export DATABASE_URL="sqlite:bardak.sqlite"
+#export DATABASE_URL="sqlite:bardak.sqlite"
 export RUST_LOG=warp=debug,hyper=debug
 
-rm -rf ./.sqlx || die "cannot rm sqlx"
-rm -rf ./bardak.sqlite || die "cannot rm db"
+./scripts/clean.sh || die "cannot clean"
 sqlx db create || die "cannot db create"
 sqlx migrate run || die "cannot run migrations"
 exec cargo run
