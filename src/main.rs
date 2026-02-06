@@ -5,8 +5,7 @@ mod app;
 mod db;
 mod config;
 mod schema;
-mod filters;
-mod handlers;
+mod api;
 
 #[tokio::main]
 async fn main() {
