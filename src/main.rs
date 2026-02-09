@@ -1,11 +1,8 @@
-use std::sync::Arc;
 
 use poem::Route;
 use poem::Server;
 use poem::listener::TcpListener;
-use poem_openapi::{OpenApi, OpenApiService};
-use poem_openapi::payload::PlainText;
-use poem_openapi::payload::Json;
+use poem_openapi::OpenApiService;
 use tracing_subscriber; // warp logging
 
 use crate::api::Api;

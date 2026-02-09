@@ -1,5 +1,4 @@
-use poem::{listener::TcpListener, Route, Server};
-use poem_openapi::{OpenApi, OpenApiService};
+use poem_openapi::OpenApi;
 use poem_openapi::payload::PlainText;
 use poem_openapi::payload::Json;
 
@@ -55,7 +54,7 @@ impl Api {
 
         match db::latest_rows(&self.state.pool, *limit, *offset).await {
             Ok(v) => DBResponse::Ok(Json(v)),
-            Err(e) => DBResponse::Error(
+            Err(_e) => DBResponse::Error(
                 Json(DBError {error: "fubar".to_string()})
             ),
         }
