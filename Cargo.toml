@@ -14,8 +14,16 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 conf = "0.4.5"
 itertools = "0.14.0"
-poem = "3"
-poem-openapi = { version = "5", features = ["swagger-ui"] }
+poem = "3.0.1"
+poem-openapi = { version = "5.1.16", features = ["swagger-ui"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 #sqlx-cli = "0.8.6"
+
+#[profile.release-static]
+#inherits = "release"
+#rustflags = [
+#	"-C", "linker=ld.lld",
+#	"-C", "relocation-model=static",
+#	#"-C", "strip=symbols"
+#	]
 

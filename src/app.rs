@@ -3,7 +3,8 @@ use sqlx::sqlite::SqlitePool;
 use std::sync::Arc;
 use crate::config::Config;
 use crate::db;
-use crate::api::Api;
+//use crate::api::Api;
+use crate::api;
 use conf::Conf;
 
 use poem::{listener::TcpListener, Route, Server};
@@ -28,7 +29,7 @@ impl App {
     pub async fn run(self: Arc<Self>) {
 
         let api_service =
-            OpenApiService::new(Api, "Hello World", "1.0")
+            OpenApiService::new(self, "Hello World", "1.0")
             .server("http://localhost:3030");
         let ui = api_service.swagger_ui();
         let app = Route::new()

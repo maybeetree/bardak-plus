@@ -1,22 +1,38 @@
 use std::sync::Arc;
+
+use poem::Route;
+use poem::Server;
+use poem::listener::TcpListener;
+use poem_openapi::{OpenApi, OpenApiService};
+use poem_openapi::payload::PlainText;
+use poem_openapi::payload::Json;
 use tracing_subscriber; // warp logging
-use crate::app::App;
-mod app;
+
+use crate::api::Api;
+//use crate::app::App;
+//mod app;
 mod db;
 mod config;
 mod schema;
 mod api;
+mod state;
 
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init(); // warp logging
 
-    //let app = Arc::new(App {
-    //    conn: db::get_db().expect("Failed to init db"),
-    //});
-    let app = Arc::new(App::new().await);
+    let api_service =
+        OpenApiService::new(Api::new().await, "Hello World", "1.0")
+        .server("http://localhost:3030");
+    let ui = api_service.swagger_ui();
+    let app = Route::new()
+        .nest("/", api_service)
+        .nest("/docs", ui);
 
-    app.run().await;
-    //api::run(conn).await;
+    Server::new(TcpListener::bind("0.0.0.0:3030"))
+        .run(app)
+        .await;
+
+
 }
 

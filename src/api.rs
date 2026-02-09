@@ -1,10 +1,33 @@
 use poem::{listener::TcpListener, Route, Server};
-use poem_openapi::{payload::PlainText, OpenApi, OpenApiService};
+use poem_openapi::{OpenApi, OpenApiService};
+use poem_openapi::payload::PlainText;
+use poem_openapi::payload::Json;
 
-pub struct Api;
+use poem_openapi::param::Query;
+//use poem::web::Query;
+
+use crate::schema;
+use crate::schema::DBResponse;
+use crate::schema::DBError;
+use crate::schema::ResGetLatestRows;
+//use crate::schema::ReqGetLatestRows;
+use crate::db;
+use crate::state::State;
+use std::sync::Arc;
+
+pub struct Api {
+    state: Arc<State>,
+}
+
 
 #[OpenApi]
 impl Api {
+    pub async fn new() -> Self {
+        Self {
+            state: Arc::new(State::new().await),
+        }
+    }
+
     /// Hello!
     #[oai(path = "/", method = "get")]
     async fn index(&self) -> PlainText<String> {
@@ -19,6 +42,23 @@ impl Api {
                 env!("CARGO_PKG_REPOSITORY"),
             )
         )
+    }
+
+    /// Get latest entries (by row)
+    #[oai(path = "/latest-rows", method = "get")]
+    async fn latest_rows(
+            &self,
+            //payload: Query<ReqGetLatestRows>,
+            #[oai(default = "schema::default_limit")] limit: Query<i64>,
+            #[oai(default = "schema::default_offset")] offset: Query<i64>,
+            ) -> DBResponse<ResGetLatestRows> {
+
+        match db::latest_rows(&self.state.pool, *limit, *offset).await {
+            Ok(v) => DBResponse::Ok(Json(v)),
+            Err(e) => DBResponse::Error(
+                Json(DBError {error: "fubar".to_string()})
+            ),
+        }
     }
 }
 

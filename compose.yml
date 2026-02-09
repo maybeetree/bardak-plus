@@ -2,10 +2,10 @@ services:
   dev:
     init: true
     #image: compose-bases-void-rust
-    image: bardak-plus
-    #build:
-    #  dockerfile_inline: |
-    #    FROM void-rust
+    #image: bardak-plus
+    build:
+      dockerfile_inline: |
+        FROM compose-bases-void-rust
 
     #  additional_contexts:
     #    void-rust: service:void-rust

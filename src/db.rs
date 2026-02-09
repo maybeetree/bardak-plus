@@ -24,8 +24,10 @@ pub async fn init_db(pool: &SqlitePool) -> Result<(), MigrateError> {
 
 pub async fn latest_rows(
     pool: &SqlitePool,
-    payload: &schema::GetLatestRows,
-) -> Result<schema::ResponseGetLatestRows, sqlx::Error> {
+    //payload: &schema::ReqGetLatestRows,
+    limit: i64,
+    offset: i64,
+) -> Result<schema::ResGetLatestRows, sqlx::Error> {
     let rows = sqlx::query(
         r#"
         SELECT
@@ -42,15 +44,15 @@ pub async fn latest_rows(
         LIMIT ?1 OFFSET ?2
         "#,
     )
-    .bind(payload.limit)
-    .bind(payload.offset)
+    .bind(limit)
+    .bind(offset)
     .fetch_all(pool)
     .await?;
 
-    Ok(schema::ResponseGetLatestRows {
+    Ok(schema::ResGetLatestRows {
         rows: rows
             .into_iter()
-            .map(|row| schema::ResponseGetLatestRowsInner {
+            .map(|row| schema::ResGetLatestRowsInner {
                 item_id: row
                     .try_get::<i64, _>("id")
                     .expect("id should not be null"),
