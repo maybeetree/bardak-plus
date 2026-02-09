@@ -70,7 +70,9 @@ pub async fn latest_rows(
 
 pub async fn latest_items(
         pool: &SqlitePool,
-        payload: &schema::GetLatestItems,
+        //payload: &schema::GetLatestItems,
+        limit: i64,
+        offset: i64,
         ) -> Result<schema::ResponseGetLatestItems, sqlx::Error> {
     let rows = sqlx::query(
         r#"
@@ -92,8 +94,8 @@ pub async fn latest_items(
         ;
         "#
         )
-        .bind(payload.limit)
-        .bind(payload.offset)
+        .bind(limit)
+        .bind(offset)
         .fetch_all(pool)
         .await?;
 

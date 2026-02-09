@@ -62,12 +62,12 @@ pub struct GetLatestItems {
     pub offset: i64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ResponseGetLatestItems {
     pub items: Vec<ResponseGetLatestItemsInner>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ResponseGetLatestItemsInner {
     pub item_id: i64,
     pub attrs: HashMap<String, String>,

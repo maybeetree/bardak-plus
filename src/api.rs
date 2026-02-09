@@ -9,6 +9,7 @@ use crate::schema;
 use crate::schema::DBResponse;
 use crate::schema::DBError;
 use crate::schema::ResGetLatestRows;
+use crate::schema::ResponseGetLatestItems;
 //use crate::schema::ReqGetLatestRows;
 use crate::db;
 use crate::state::State;
@@ -53,6 +54,23 @@ impl Api {
             ) -> DBResponse<ResGetLatestRows> {
 
         match db::latest_rows(&self.state.pool, *limit, *offset).await {
+            Ok(v) => DBResponse::Ok(Json(v)),
+            Err(_e) => DBResponse::Error(
+                Json(DBError {error: "fubar".to_string()})
+            ),
+        }
+    }
+
+    /// Get latest items
+    #[oai(path = "/latest-items", method = "get")]
+    async fn latest_items(
+            &self,
+            //payload: Query<ReqGetLatestRows>,
+            #[oai(default = "schema::default_limit")] limit: Query<i64>,
+            #[oai(default = "schema::default_offset")] offset: Query<i64>,
+            ) -> DBResponse<ResponseGetLatestItems> {
+
+        match db::latest_items(&self.state.pool, *limit, *offset).await {
             Ok(v) => DBResponse::Ok(Json(v)),
             Err(_e) => DBResponse::Error(
                 Json(DBError {error: "fubar".to_string()})
