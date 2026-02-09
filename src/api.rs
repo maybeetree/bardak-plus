@@ -1,6 +1,7 @@
 use poem_openapi::OpenApi;
 use poem_openapi::payload::PlainText;
 use poem_openapi::payload::Json;
+use poem_openapi::types::ToJSON;
 
 use poem_openapi::param::Query;
 //use poem::web::Query;
@@ -14,6 +15,15 @@ use crate::schema::ResponseGetLatestItems;
 use crate::db;
 use crate::state::State;
 use std::sync::Arc;
+
+fn into_db_response<T: ToJSON>(
+        result: Result<T, sqlx::Error>,
+    ) -> DBResponse<T> {
+    match result {
+        Ok(v) => DBResponse::Ok(Json(v)),
+        Err(e) => DBResponse::Error(Json(DBError { error: e.to_string() })),
+    }
+}
 
 pub struct Api {
     state: Arc<State>,
@@ -52,13 +62,14 @@ impl Api {
             #[oai(default = "schema::default_offset")] offset: Query<i64>,
             ) -> DBResponse<ResGetLatestRows> {
 
-        match db::latest_rows(&self.state.pool, *limit, *offset).await {
-            Ok(v) => DBResponse::Ok(Json(v)),
-            Err(e) => DBResponse::Error(
-                Json(DBError {error: e.to_string()})
-            ),
+        into_db_response(
+            db::latest_rows(
+                &self.state.pool,
+                *limit,
+                *offset
+                ).await
+            )
         }
-    }
 
     /// Get latest items
     #[oai(path = "/latest-items", method = "get")]
@@ -69,12 +80,13 @@ impl Api {
             #[oai(default = "schema::default_offset")] offset: Query<i64>,
             ) -> DBResponse<ResponseGetLatestItems> {
 
-        match db::latest_items(&self.state.pool, *limit, *offset).await {
-            Ok(v) => DBResponse::Ok(Json(v)),
-            Err(e) => DBResponse::Error(
-                Json(DBError {error: e.to_string()})
-            ),
-        }
+        into_db_response(
+            db::latest_items(
+                &self.state.pool,
+                *limit,
+                *offset
+                ).await
+            )
     }
 }
 
