@@ -17,6 +17,7 @@ itertools = "0.14.0"
 poem = "3.0.1"
 poem-openapi = { version = "5.1.16", features = ["swagger-ui"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+include_dir = "0.7.4"
 #sqlx-cli = "0.8.6"
 
 #[profile.release-static]
@@ -26,4 +27,9 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 #	"-C", "relocation-model=static",
 #	#"-C", "strip=symbols"
 #	]
+
+[build-dependencies]
+tar = "0.4"
+flate2 = "1"
+walkdir = "2"
 

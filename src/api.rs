@@ -1,14 +1,19 @@
 use poem_openapi::OpenApi;
 use poem_openapi::payload::PlainText;
+use poem_openapi::payload::Attachment;
+use poem_openapi::payload::AttachmentType;
 use poem_openapi::payload::Json;
 use poem_openapi::types::ToJSON;
+use poem_openapi::ApiResponse;
+use poem::IntoResponse;
 
 use poem_openapi::param::Query;
 //use poem::web::Query;
 
 use crate::schema;
 use crate::schema::DBResponse;
-use crate::schema::DBError;
+use crate::schema::BinResponse;
+use crate::schema::Error;
 use crate::schema::ResLatestRows;
 use crate::schema::ResLatestItems;
 //use crate::schema::ReqGetLatestRows;
@@ -21,9 +26,11 @@ fn into_db_response<T: ToJSON>(
     ) -> DBResponse<T> {
     match result {
         Ok(v) => DBResponse::Ok(Json(v)),
-        Err(e) => DBResponse::Error(Json(DBError { error: e.to_string() })),
+        Err(e) => DBResponse::Error(Json(Error { error: e.to_string() })),
     }
 }
+
+static SOURCE_ARCHIVE: &'static [u8] = include_bytes!(env!("SOURCE_ARCHIVE"));
 
 pub struct Api {
     state: Arc<State>,
@@ -56,6 +63,23 @@ impl Api {
                 env!("CARGO_PKG_REPOSITORY"),
             )
         )
+    }
+
+    /// Source code archive
+    ///
+    /// Returns a tarball of the source code
+    /// that this bardak server is running
+    #[oai(path = "/source", method = "get")]
+    async fn get_source(&self)
+            -> BinResponse
+            {
+        BinResponse::Ok(
+            Attachment::<&'static [u8]>::new(SOURCE_ARCHIVE)
+                .filename("bardak.tar.gz") // TODO git tag or smt
+                // tell browsers to download it as a file
+                // instead of trying to display it
+                .attachment_type(AttachmentType::Attachment)
+            )
     }
 
     /// Get latest entries (by row)

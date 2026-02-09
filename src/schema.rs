@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use poem_openapi::payload::Json;
+use poem_openapi::payload::Attachment;
 use poem_openapi::Object;
 use poem_openapi::ApiResponse;
 use poem_openapi::types::Type;
@@ -10,6 +11,17 @@ use poem_openapi::types::ToJSON;
 // We use i64 for everything because that's
 // the native datatype of sqlite.
 // Using the more common i32 would involve casts everywhere.
+
+#[derive(ApiResponse)]
+pub enum BinResponse {
+    /// Success.
+    #[oai(status = 200)]
+    Ok(Attachment<&'static [u8]>),
+
+    /// Any error.
+    #[oai(status = 500)]
+    Error(Json<Error>),
+}
 
 /// Database action response
 #[derive(ApiResponse)]
@@ -20,12 +32,12 @@ pub enum DBResponse<T: Type + ToJSON> {
 
     /// Any error.
     #[oai(status = 500)]
-    Error(Json<DBError>),
+    Error(Json<Error>),
 }
 
 /// Database error
 #[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct DBError {
+pub struct Error {
     pub error: String,
 }
 
