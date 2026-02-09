@@ -19,7 +19,6 @@ pub struct Api {
     state: Arc<State>,
 }
 
-
 #[OpenApi]
 impl Api {
     pub async fn new() -> Self {
@@ -55,8 +54,8 @@ impl Api {
 
         match db::latest_rows(&self.state.pool, *limit, *offset).await {
             Ok(v) => DBResponse::Ok(Json(v)),
-            Err(_e) => DBResponse::Error(
-                Json(DBError {error: "fubar".to_string()})
+            Err(e) => DBResponse::Error(
+                Json(DBError {error: e.to_string()})
             ),
         }
     }
@@ -72,8 +71,8 @@ impl Api {
 
         match db::latest_items(&self.state.pool, *limit, *offset).await {
             Ok(v) => DBResponse::Ok(Json(v)),
-            Err(_e) => DBResponse::Error(
-                Json(DBError {error: "fubar".to_string()})
+            Err(e) => DBResponse::Error(
+                Json(DBError {error: e.to_string()})
             ),
         }
     }
