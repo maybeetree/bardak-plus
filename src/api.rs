@@ -5,7 +5,7 @@ pub struct Api;
 
 #[OpenApi]
 impl Api {
-    /// index
+    /// Hello!
     #[oai(path = "/", method = "get")]
     async fn index(&self) -> PlainText<String> {
         PlainText(
