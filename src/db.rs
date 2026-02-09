@@ -24,10 +24,10 @@ pub async fn init_db(pool: &SqlitePool) -> Result<(), MigrateError> {
 
 pub async fn latest_rows(
     pool: &SqlitePool,
-    //payload: &schema::ReqGetLatestRows,
+    //payload: &schema::ReqetLatestRows,
     limit: i64,
     offset: i64,
-) -> Result<schema::ResGetLatestRows, sqlx::Error> {
+) -> Result<schema::ResLatestRows, sqlx::Error> {
     let rows = sqlx::query(
         r#"
         SELECT
@@ -49,10 +49,10 @@ pub async fn latest_rows(
     .fetch_all(pool)
     .await?;
 
-    Ok(schema::ResGetLatestRows {
+    Ok(schema::ResLatestRows {
         rows: rows
             .into_iter()
-            .map(|row| schema::ResGetLatestRowsInner {
+            .map(|row| schema::ResLatestRowsInner {
                 item_id: row
                     .try_get::<i64, _>("id")
                     .expect("id should not be null"),
@@ -73,7 +73,7 @@ pub async fn latest_items(
         //payload: &schema::GetLatestItems,
         limit: i64,
         offset: i64,
-        ) -> Result<schema::ResponseGetLatestItems, sqlx::Error> {
+        ) -> Result<schema::ResLatestItems, sqlx::Error> {
     let rows = sqlx::query(
         r#"
         WITH litem AS (
@@ -103,7 +103,7 @@ pub async fn latest_items(
     // or
     // TODO preallocate??
 
-    Ok(schema::ResponseGetLatestItems{
+    Ok(schema::ResLatestItems{
         items:
             rows
             .into_iter()
@@ -115,7 +115,7 @@ pub async fn latest_items(
             .into_iter()
             .map(
                 |(item_id, group)| {
-                    schema::ResponseGetLatestItemsInner {
+                    schema::ResLatestItemsInner {
                         item_id: item_id,
                         attrs:
                             group

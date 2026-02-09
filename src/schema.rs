@@ -24,51 +24,35 @@ pub enum DBResponse<T: Type + ToJSON> {
 }
 
 /// Database error
-#[derive(Debug, Object, Clone, Eq, PartialEq)]
+#[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct DBError {
     pub error: String,
 }
 
-
-///// Get latest rows request schema
-//#[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
-//pub struct ReqGetLatestRows {
-//    #[serde(default = "default_limit")]
-//    pub limit: i64,
-//    #[serde(default = "default_offset")]
-//    pub offset: i64,
-//}
-
 /// Get latest rows response schema
 #[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct ResGetLatestRows {
-    pub rows: Vec<ResGetLatestRowsInner>,
+pub struct ResLatestRows {
+    pub rows: Vec<ResLatestRowsInner>,
 }
 
 
 /// Get latest rows response schema (single item)
 #[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct ResGetLatestRowsInner {
+pub struct ResLatestRowsInner {
     pub item_id: i64,
     pub attr_name: String,
     pub attr_val: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct GetLatestItems {
-    #[serde(default = "default_limit")]
-    pub limit: i64,
-    #[serde(default = "default_offset")]
-    pub offset: i64,
+/// Get latest items response schema
+#[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct ResLatestItems {
+    pub items: Vec<ResLatestItemsInner>,
 }
 
+/// Get latest items response schema (single item)
 #[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct ResponseGetLatestItems {
-    pub items: Vec<ResponseGetLatestItemsInner>,
-}
-
-#[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
-pub struct ResponseGetLatestItemsInner {
+pub struct ResLatestItemsInner {
     pub item_id: i64,
     pub attrs: HashMap<String, String>,
 }

@@ -9,8 +9,8 @@ use poem_openapi::param::Query;
 use crate::schema;
 use crate::schema::DBResponse;
 use crate::schema::DBError;
-use crate::schema::ResGetLatestRows;
-use crate::schema::ResponseGetLatestItems;
+use crate::schema::ResLatestRows;
+use crate::schema::ResLatestItems;
 //use crate::schema::ReqGetLatestRows;
 use crate::db;
 use crate::state::State;
@@ -37,7 +37,12 @@ impl Api {
         }
     }
 
-    /// Hello!
+    /// Information endpoint
+    ///
+    /// This method returns some basic information about
+    /// the bardak server and provides a link to the source code
+    /// repository
+    /// (as required by the AGPL license)
     #[oai(path = "/", method = "get")]
     async fn index(&self) -> PlainText<String> {
         PlainText(
@@ -57,10 +62,10 @@ impl Api {
     #[oai(path = "/latest-rows", method = "get")]
     async fn latest_rows(
             &self,
-            //payload: Query<ReqGetLatestRows>,
+            //payload: Query<ReqLatestRows>,
             #[oai(default = "schema::default_limit")] limit: Query<i64>,
             #[oai(default = "schema::default_offset")] offset: Query<i64>,
-            ) -> DBResponse<ResGetLatestRows> {
+            ) -> DBResponse<ResLatestRows> {
 
         into_db_response(
             db::latest_rows(
@@ -75,10 +80,10 @@ impl Api {
     #[oai(path = "/latest-items", method = "get")]
     async fn latest_items(
             &self,
-            //payload: Query<ReqGetLatestRows>,
+            //payload: Query<ReqLatestRows>,
             #[oai(default = "schema::default_limit")] limit: Query<i64>,
             #[oai(default = "schema::default_offset")] offset: Query<i64>,
-            ) -> DBResponse<ResponseGetLatestItems> {
+            ) -> DBResponse<ResLatestItems> {
 
         into_db_response(
             db::latest_items(
