@@ -24,6 +24,7 @@ use crate::schema::ReqAddItem;
 use crate::schema::ResAddMedia;
 //use crate::schema::ReqGetLatestRows;
 use crate::db;
+use crate::media;
 use crate::state::State;
 use std::sync::Arc;
 
@@ -150,8 +151,7 @@ impl Api {
         //Ok(Json(bytes.len()))
 
         into_db_response(
-            db::add_media(
-                &self.state.pool,
+            media::add_media(
                 (&payload).to_vec()
                 ).await
             )

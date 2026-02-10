@@ -13,6 +13,7 @@ mod config;
 mod schema;
 mod api;
 mod state;
+mod media;
 
 #[tokio::main]
 async fn main() {
@@ -29,7 +30,6 @@ async fn main() {
     Server::new(TcpListener::bind("0.0.0.0:3030"))
         .run(app)
         .await;
-
 
 }
 

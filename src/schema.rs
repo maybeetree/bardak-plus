@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use uuid::Uuid;
 
 use poem_openapi::payload::Json;
 use poem_openapi::payload::Attachment;
@@ -85,7 +86,11 @@ pub struct ResAddItem {
 #[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ResAddMedia {
     /// ID of the newly created item
-    pub media_id: i64,
+    pub media_id: String,
+    // I know rust has u128 which would be more compact to store
+    // uuid but json doesn't support it.
+    // poem_openapi also doesn't like string slices from
+    // what I understand, it must be dynamic String
 }
 
 pub fn default_limit() -> i64 {
