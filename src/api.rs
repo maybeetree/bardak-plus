@@ -16,6 +16,8 @@ use crate::schema::BinResponse;
 use crate::schema::Error;
 use crate::schema::ResLatestRows;
 use crate::schema::ResLatestItems;
+use crate::schema::ResAddItem;
+use crate::schema::ReqAddItem;
 //use crate::schema::ReqGetLatestRows;
 use crate::db;
 use crate::state::State;
@@ -117,5 +119,23 @@ impl Api {
                 ).await
             )
     }
+
+    /// Add new item with some attrs
+    ///
+    /// TODO limit number of attrs? or just payload size?
+    #[oai(path = "/add-item", method = "post")]
+    async fn add_item(
+            &self,
+            payload: Json<ReqAddItem>,
+            ) -> DBResponse<ResAddItem> {
+
+        into_db_response(
+            db::add_item(
+                &self.state.pool,
+                &payload
+                ).await
+            )
+    }
 }
+
 

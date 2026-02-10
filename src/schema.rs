@@ -69,6 +69,19 @@ pub struct ResLatestItemsInner {
     pub attrs: HashMap<String, String>,
 }
 
+/// Request: create a new item with some attrs
+#[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct ReqAddItem {
+    pub attrs: HashMap<String, String>,
+}
+
+/// Response: create a new item with some attrs
+#[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct ResAddItem {
+    /// ID of the newly created item
+    pub item_id: i64,
+}
+
 pub fn default_limit() -> i64 {
     100
 }
