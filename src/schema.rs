@@ -82,6 +82,12 @@ pub struct ResAddItem {
     pub item_id: i64,
 }
 
+#[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct ResAddMedia {
+    /// ID of the newly created item
+    pub media_id: i64,
+}
+
 pub fn default_limit() -> i64 {
     100
 }
@@ -89,4 +95,5 @@ pub fn default_limit() -> i64 {
 pub fn default_offset() -> i64 {
     0
 }
+
 

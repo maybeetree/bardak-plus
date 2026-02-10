@@ -1,10 +1,13 @@
 use poem_openapi::OpenApi;
 use poem_openapi::payload::PlainText;
+use poem_openapi::payload::Html;
 use poem_openapi::payload::Attachment;
 use poem_openapi::payload::AttachmentType;
 use poem_openapi::payload::Json;
+use poem_openapi::payload::Binary;
 use poem_openapi::types::ToJSON;
 use poem_openapi::ApiResponse;
+use poem_openapi::payload::Form;
 use poem::IntoResponse;
 
 use poem_openapi::param::Query;
@@ -18,10 +21,13 @@ use crate::schema::ResLatestRows;
 use crate::schema::ResLatestItems;
 use crate::schema::ResAddItem;
 use crate::schema::ReqAddItem;
+use crate::schema::ResAddMedia;
 //use crate::schema::ReqGetLatestRows;
 use crate::db;
 use crate::state::State;
 use std::sync::Arc;
+
+use const_format::formatcp;
 
 fn into_db_response<T: ToJSON>(
         result: Result<T, sqlx::Error>,
@@ -33,6 +39,7 @@ fn into_db_response<T: ToJSON>(
 }
 
 static SOURCE_ARCHIVE: &'static [u8] = include_bytes!(env!("SOURCE_ARCHIVE"));
+static INDEX_PAGE: &'static str = include_str!(env!("INDEX_PAGE"));
 
 pub struct Api {
     state: Arc<State>,
@@ -53,18 +60,8 @@ impl Api {
     /// repository
     /// (as required by the AGPL license)
     #[oai(path = "/", method = "get")]
-    async fn index(&self) -> PlainText<String> {
-        PlainText(
-            format!(
-                "Hello! I am {} version {}. \
-                I am licensed under {}, \
-                and my source code is at {}.",
-                env!("CARGO_PKG_NAME"),
-                env!("CARGO_PKG_VERSION"),
-                env!("CARGO_PKG_LICENSE"),
-                env!("CARGO_PKG_REPOSITORY"),
-            )
-        )
+    async fn index(&self) -> Html<String> {
+        Html(INDEX_PAGE.to_string())
     }
 
     /// Source code archive
@@ -133,6 +130,29 @@ impl Api {
             db::add_item(
                 &self.state.pool,
                 &payload
+                ).await
+            )
+    }
+
+
+    /// Add media item
+    ///
+    /// doesn't work yet
+    #[oai(path = "/add-media", method = "post")]
+    async fn add_media(
+            &self,
+            payload: Binary<Vec<u8>>,
+            ) -> DBResponse<ResAddMedia> {
+
+        //let mut reader = data.0.into_async_read();
+        //let mut bytes = Vec::new();
+        //reader.read_to_end(&mut bytes).await.map_err(BadRequest)?;
+        //Ok(Json(bytes.len()))
+
+        into_db_response(
+            db::add_media(
+                &self.state.pool,
+                (&payload).to_vec()
                 ).await
             )
     }

@@ -1,4 +1,5 @@
 use std::env;
+use std::fs;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use flate2::Compression;
@@ -52,4 +53,24 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=src");
     println!("cargo:rerun-if-changed=.gitignore");  // Rebuild on gitignore changes
+
+   let template = fs::read_to_string("static/index.html")
+        .expect("failed to read index.html");
+
+    let rendered = template
+        .replace("{CARGO_PKG_NAME}", env!("CARGO_PKG_NAME"))
+        .replace("{CARGO_PKG_VERSION}", env!("CARGO_PKG_VERSION"))
+        .replace("{CARGO_PKG_LICENSE}", env!("CARGO_PKG_LICENSE"))
+        .replace("{CARGO_PKG_REPOSITORY}", env!("CARGO_PKG_REPOSITORY"))
+        ;
+
+    // Write result to $OUT_DIR/generated_string.txt
+    let out_dir = env::var("OUT_DIR").unwrap();
+    let out_path = Path::new(&out_dir).join("index.html");
+    fs::write(&out_path, rendered).expect("failed to write generated_string.txt");
+    println!("cargo:rustc-env=INDEX_PAGE={}", out_path.display());
+
+    println!("cargo:rerun-if-changed=static/index.html");
+    
+
 }

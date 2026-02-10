@@ -184,3 +184,14 @@ pub async fn add_item(
     })
 }
 
+pub async fn add_media(
+        pool: &SqlitePool,
+        payload: Vec<u8>,
+        ) -> Result<schema::ResAddMedia, sqlx::Error>
+{
+
+    Ok(schema::ResAddMedia {
+        media_id: 69
+    })
+}
+
