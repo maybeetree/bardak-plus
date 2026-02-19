@@ -83,7 +83,7 @@ impl Api {
     }
 
     /// Get latest entries (by row)
-    #[oai(path = "/latest-rows", method = "get")]
+    #[oai(path = "/api/unstable/latest-rows", method = "get")]
     async fn latest_rows(
             &self,
             //payload: Query<ReqLatestRows>,
@@ -101,7 +101,7 @@ impl Api {
         }
 
     /// Get latest items
-    #[oai(path = "/latest-items", method = "get")]
+    #[oai(path = "/api/unstable/latest-items", method = "get")]
     async fn latest_items(
             &self,
             //payload: Query<ReqLatestRows>,
@@ -121,7 +121,7 @@ impl Api {
     /// Add new item with some attrs
     ///
     /// TODO limit number of attrs? or just payload size?
-    #[oai(path = "/add-item", method = "post")]
+    #[oai(path = "/api/unstable/add-item", method = "post")]
     async fn add_item(
             &self,
             payload: Json<ReqAddItem>,
@@ -139,7 +139,7 @@ impl Api {
     /// Add media item
     ///
     /// doesn't work yet
-    #[oai(path = "/add-media", method = "post")]
+    #[oai(path = "/api/unstable/add-media", method = "post")]
     async fn add_media(
             &self,
             payload: Binary<Vec<u8>>,
