@@ -27,6 +27,9 @@ async fn main() {
         .nest("/", api_service)
         .nest("/docs", ui);
 
+    // TODO .nest for different version
+    // TODO .data for passing pool/state instead of impl crutch?
+
     Server::new(TcpListener::bind("0.0.0.0:3030"))
         .run(app)
         .await;

@@ -83,6 +83,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.101"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f0e0fee31ef5ed1ba1316088939cea399010ed7731dba877ed44aeb407a75ea"
+
+[[package]]
 name = "atoi"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -107,6 +113,7 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 name = "bardak-plus"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "chrono",
  "conf",
  "const_format",
@@ -118,6 +125,7 @@ dependencies = [
  "poem-openapi",
  "serde",
  "serde_json",
+ "sha2",
  "sqlx",
  "tar",
  "tokio",

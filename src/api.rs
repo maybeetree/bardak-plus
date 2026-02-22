@@ -9,6 +9,9 @@ use poem_openapi::types::ToJSON;
 use poem_openapi::ApiResponse;
 use poem_openapi::payload::Form;
 use poem::IntoResponse;
+use poem::Body;
+use sha2:Sha256;
+use anyhow;
 
 use poem_openapi::param::Query;
 //use poem::web::Query;
@@ -142,17 +145,17 @@ impl Api {
     #[oai(path = "/api/unstable/add-media", method = "post")]
     async fn add_media(
             &self,
-            payload: Binary<Vec<u8>>,
+            payload: Binary<Body>,
             ) -> DBResponse<ResAddMedia> {
 
-        //let mut reader = data.0.into_async_read();
+        let mut reader = payload.0.into_async_read();
         //let mut bytes = Vec::new();
         //reader.read_to_end(&mut bytes).await.map_err(BadRequest)?;
         //Ok(Json(bytes.len()))
 
         into_db_response(
             media::add_media(
-                (&payload).to_vec()
+                &reader
                 ).await
             )
     }
