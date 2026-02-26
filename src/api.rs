@@ -148,7 +148,8 @@ impl Api {
 
         into_db_response(
             media::add_media(
-                &mut reader
+                &mut reader,
+                &self.state.config,
                 ).await
             )
     }
