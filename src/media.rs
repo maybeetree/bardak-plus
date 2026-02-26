@@ -4,6 +4,9 @@ use uuid::Uuid;
 use tokio;
 use tokio::time;
 use tokio::io::AsyncWriteExt;
+use tokio::io::AsyncReadExt;
+use sha2::Sha256;
+use sha2::Digest;
 
 
 pub async fn add_media<R>(
@@ -21,7 +24,7 @@ where
     );
 
     // TODO
-    save_media(&reader).await.unwrap();
+    save_media(&mut reader).await.unwrap();
 
     Ok(schema::ResAddMedia {
         media_id: id.to_string()

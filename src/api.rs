@@ -10,7 +10,7 @@ use poem_openapi::ApiResponse;
 use poem_openapi::payload::Form;
 use poem::IntoResponse;
 use poem::Body;
-use sha2:Sha256;
+use sha2::Sha256;
 use anyhow;
 
 use poem_openapi::param::Query;
@@ -155,7 +155,7 @@ impl Api {
 
         into_db_response(
             media::add_media(
-                &reader
+                &mut reader
                 ).await
             )
     }
