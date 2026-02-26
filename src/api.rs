@@ -1,17 +1,11 @@
 use poem_openapi::OpenApi;
-use poem_openapi::payload::PlainText;
 use poem_openapi::payload::Html;
 use poem_openapi::payload::Attachment;
 use poem_openapi::payload::AttachmentType;
 use poem_openapi::payload::Json;
 use poem_openapi::payload::Binary;
 use poem_openapi::types::ToJSON;
-use poem_openapi::ApiResponse;
-use poem_openapi::payload::Form;
-use poem::IntoResponse;
 use poem::Body;
-use sha2::Sha256;
-use anyhow;
 
 use poem_openapi::param::Query;
 //use poem::web::Query;
@@ -31,7 +25,6 @@ use crate::media;
 use crate::state::State;
 use std::sync::Arc;
 
-use const_format::formatcp;
 
 fn into_db_response<T: ToJSON>(
         result: Result<T, sqlx::Error>,

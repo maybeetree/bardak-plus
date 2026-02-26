@@ -1,5 +1,4 @@
 use crate::schema;
-use sqlx::Error;
 use uuid::Uuid;
 use tokio;
 use tokio::time;

@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use uuid::Uuid;
 
 use poem_openapi::payload::Json;
 use poem_openapi::payload::Attachment;
