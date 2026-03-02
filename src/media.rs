@@ -10,12 +10,14 @@ use crate::config::Config;
 use std::path::PathBuf;
 use tokio::fs::rename;
 
+use anyhow::Result;
+
 /// Save media to disk from reader
 /// and launch thumbnailer task
 pub async fn add_media<R>(
         mut reader: R,
         config: &Config,
-    ) -> Result<schema::ResAddMedia, sqlx::Error>
+    ) -> Result<schema::ResAddMedia>
 where
     R: tokio::io::AsyncRead + Unpin,
 {
@@ -27,11 +29,10 @@ where
         mytask()
     );
 
-    // TODO
     save_media(
         &mut reader,
         config,
-        ).await.unwrap();
+        ).await?;
 
     Ok(schema::ResAddMedia {
         media_id: id.to_string()

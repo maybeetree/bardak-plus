@@ -11,7 +11,7 @@ use poem_openapi::param::Query;
 //use poem::web::Query;
 
 use crate::schema;
-use crate::schema::DBResponse;
+use crate::schema::JsonResponse;
 use crate::schema::BinResponse;
 use crate::schema::Error;
 use crate::schema::ResLatestRows;
@@ -30,10 +30,19 @@ use anyhow::Result;
 
 fn into_db_response<T: ToJSON>(
         result: Result<T, sqlx::Error>,
-    ) -> DBResponse<T> {
+    ) -> JsonResponse<T> {
     match result {
-        Ok(v) => DBResponse::Ok(Json(v)),
-        Err(e) => DBResponse::Error(Json(Error { error: e.to_string() })),
+        Ok(v) => JsonResponse::Ok(Json(v)),
+        Err(e) => JsonResponse::Error(Json(Error { error: e.to_string() })),
+    }
+}
+
+fn into_json_response<T: ToJSON, R: ToString>(
+        result: Result<T, R>,
+    ) -> JsonResponse<T> {
+    match result {
+        Ok(v) => JsonResponse::Ok(Json(v)),
+        Err(e) => JsonResponse::Error(Json(Error { error: e.to_string() })),
     }
 }
 
@@ -88,7 +97,7 @@ impl Api {
             //payload: Query<ReqLatestRows>,
             #[oai(default = "schema::default_limit")] limit: Query<i64>,
             #[oai(default = "schema::default_offset")] offset: Query<i64>,
-            ) -> DBResponse<ResLatestRows> {
+            ) -> JsonResponse<ResLatestRows> {
 
         into_db_response(
             db::latest_rows(
@@ -106,7 +115,7 @@ impl Api {
             //payload: Query<ReqLatestRows>,
             #[oai(default = "schema::default_limit")] limit: Query<i64>,
             #[oai(default = "schema::default_offset")] offset: Query<i64>,
-            ) -> DBResponse<ResLatestItems> {
+            ) -> JsonResponse<ResLatestItems> {
 
         into_db_response(
             db::latest_items(
@@ -124,7 +133,7 @@ impl Api {
     async fn add_item(
             &self,
             payload: Json<ReqAddItem>,
-            ) -> DBResponse<ResAddItem> {
+            ) -> JsonResponse<ResAddItem> {
 
         into_db_response(
             db::add_item(
@@ -142,14 +151,14 @@ impl Api {
     async fn add_media(
             &self,
             payload: Binary<Body>,
-            ) -> DBResponse<ResAddMedia> {
+            ) -> JsonResponse<ResAddMedia> {
 
         let mut reader = payload.0.into_async_read();
         //let mut bytes = Vec::new();
         //reader.read_to_end(&mut bytes).await.map_err(BadRequest)?;
         //Ok(Json(bytes.len()))
 
-        into_db_response(
+        into_json_response(
             media::add_media(
                 &mut reader,
                 &self.state.config,

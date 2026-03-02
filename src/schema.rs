@@ -25,7 +25,7 @@ pub enum BinResponse {
 
 /// Database action response
 #[derive(ApiResponse)]
-pub enum DBResponse<T: Type + ToJSON> {
+pub enum JsonResponse<T: Type + ToJSON> {
     /// Success.
     #[oai(status = 200)]
     Ok(Json<T>),
