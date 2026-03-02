@@ -85,11 +85,8 @@ pub struct ResAddItem {
 #[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ResAddMedia {
     /// ID of the newly created item
+    pub task_id: String,
     pub media_id: String,
-    // I know rust has u128 which would be more compact to store
-    // uuid but json doesn't support it.
-    // poem_openapi also doesn't like string slices from
-    // what I understand, it must be dynamic String
 }
 
 pub fn default_limit() -> i64 {

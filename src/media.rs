@@ -12,6 +12,25 @@ use tokio::fs::rename;
 
 use anyhow::Result;
 
+macro_rules! media_task_id {
+    ($id:expr) => {
+        format!("bardak-media-task--{}--", $id)
+    };
+}
+
+macro_rules! saved_media_id {
+    ($id:expr) => {
+        format!("bardak-saved-media--{:x}--", $id)
+    };
+}
+
+macro_rules! saved_media_filename {
+    ($id:expr) => {
+        format!("{}.dat", saved_media_id!($id))
+    };
+}
+
+
 /// Save media to disk from reader
 /// and launch thumbnailer task
 pub async fn add_media<R>(
@@ -29,13 +48,14 @@ where
         mytask()
     );
 
-    save_media(
+    let media_id = save_media(
         &mut reader,
         config,
         ).await?;
 
     Ok(schema::ResAddMedia {
-        media_id: id.to_string()
+        task_id: media_task_id!(id).to_string(),
+        media_id: media_id,
     })
 }
 
@@ -53,7 +73,7 @@ pub async fn mytask() {
 async fn save_media<R>(
         mut reader: R,
         config: &Config,
-        ) -> anyhow::Result<()>
+        ) -> anyhow::Result<String>
 where
     R: tokio::io::AsyncRead + Unpin,
 {
@@ -85,11 +105,13 @@ where
     
     let hash = hasher.finalize();
     println!("SHA256: {:x}", hash); // Or return/store hash
+
+    let media_id = saved_media_id!(hash);
     
 
     let path_save: PathBuf = [
         config.media_save_dir.clone(),
-        format!("{:x}.dat", hash).into(),
+        saved_media_filename!(hash).into(),
         ].iter().collect();
     
     // TODO unwrap
@@ -99,6 +121,7 @@ where
         ).await.unwrap();
     
     file.sync_all().await?; // Ensure written to disk
-    Ok(())
+
+    Ok(media_id)
 }
 
