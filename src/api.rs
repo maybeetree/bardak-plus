@@ -27,16 +27,6 @@ use std::sync::Arc;
 
 use anyhow::Result;
 
-
-fn into_db_response<T: ToJSON>(
-        result: Result<T, sqlx::Error>,
-    ) -> JsonResponse<T> {
-    match result {
-        Ok(v) => JsonResponse::Ok(Json(v)),
-        Err(e) => JsonResponse::Error(Json(Error { error: e.to_string() })),
-    }
-}
-
 fn into_json_response<T: ToJSON, R: ToString>(
         result: Result<T, R>,
     ) -> JsonResponse<T> {
@@ -99,7 +89,7 @@ impl Api {
             #[oai(default = "schema::default_offset")] offset: Query<i64>,
             ) -> JsonResponse<ResLatestRows> {
 
-        into_db_response(
+        into_json_response(
             db::latest_rows(
                 &self.state.pool,
                 *limit,
@@ -117,7 +107,7 @@ impl Api {
             #[oai(default = "schema::default_offset")] offset: Query<i64>,
             ) -> JsonResponse<ResLatestItems> {
 
-        into_db_response(
+        into_json_response(
             db::latest_items(
                 &self.state.pool,
                 *limit,
@@ -135,7 +125,7 @@ impl Api {
             payload: Json<ReqAddItem>,
             ) -> JsonResponse<ResAddItem> {
 
-        into_db_response(
+        into_json_response(
             db::add_item(
                 &self.state.pool,
                 &payload
