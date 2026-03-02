@@ -25,6 +25,8 @@ use crate::media;
 use crate::state::State;
 use std::sync::Arc;
 
+use anyhow::Result;
+
 
 fn into_db_response<T: ToJSON>(
         result: Result<T, sqlx::Error>,
@@ -44,10 +46,11 @@ pub struct Api {
 
 #[OpenApi]
 impl Api {
-    pub async fn new() -> Self {
-        Self {
-            state: Arc::new(State::new().await),
-        }
+    pub async fn new() -> Result<Self> {
+        let state = State::new().await?;
+        Ok(Self {
+            state: Arc::new(state),
+        })
     }
 
     /// Information endpoint
