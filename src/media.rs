@@ -10,10 +10,16 @@ use crate::config::Config;
 use std::path::PathBuf;
 use tokio::fs::rename;
 use std::io::Cursor;
+use std::sync::Arc;
 use image::ImageReader;
 use image::{imageops, DynamicImage, ImageFormat};
+use image::GenericImageView;
+use image::Pixel;
+use image::Primitive;
+use image::ImageBuffer;
 
 use anyhow::Result;
+use anyhow::Context;
 
 // TODO this can be made much nicer by defining a custom
 // openapi type. Can have static type checking all the way thru,
@@ -35,7 +41,7 @@ macro_rules! saved_media_id {
 
 macro_rules! saved_media_filename {
     ($id:expr) => {
-        format!("{}.dat", saved_media_id!($id))
+        format!("{}.dat", $id)
     };
 }
 
@@ -56,7 +62,7 @@ macro_rules! thumb_filename {
 /// and launch thumbnailer task
 pub async fn add_media<R>(
         mut reader: R,
-        config: &Config,
+        config: Arc<Config>,
     ) -> Result<schema::ResAddMedia>
 where
     R: tokio::io::AsyncRead + Unpin,
@@ -67,12 +73,18 @@ where
 
     let media_id = save_media(
         &mut reader,
-        config,
+        &config,
         ).await?;
+
+    // here we clone arc to config because this goes in a different
+    // thread (not necesarily os thread -- remember tokio)
+    // and outlives this function
     
-    //tokio::spawn(
-    //    make_thumbs(&config, media_id.clone())
-    //);
+    tokio::spawn(
+        error_logger(
+            make_thumbs(config.clone(), media_id.clone())
+        )
+    );
 
     Ok(schema::ResAddMedia {
         task_id: media_task_id!(id).to_string(),
@@ -80,40 +92,57 @@ where
     })
 }
 
-pub async fn make_thumbs(
-    config: &Config,
-    filename: String,
-    ) {
-    for counter in 0..5 {
-        println!("Background task running... count: {}", counter);
-        time::sleep(time::Duration::from_secs(1)).await;
+pub async fn error_logger<Fut>(f: Fut)
+where
+    Fut: std::future::Future<Output = Result<(), anyhow::Error>> + Send + 'static,
+{
+    eprintln!("pre");
+    if let Err(e) = f.await {
+        eprintln!("Task failed: {}", e);
     }
+    eprintln!("post");
+}
+
+pub async fn make_thumbs(
+    config: Arc<Config>,
+    media_id: String,
+    ) -> Result<()> {
+
+    thumbs_image(&config, media_id).await
 }
 
 /// Generate thumbs with `image` crate
 /// (avif, webp, jpeg)
 pub async fn thumbs_image(
-    filename: String,
     config: &Config,
+    media_id: String,
     ) -> Result<()> {
+
+    println!("barfoo!");
 
     let path_in: PathBuf = [
         config.media_save_dir.clone(),
-        filename.clone().into(),
+        saved_media_filename!(media_id).into(),
         ].iter().collect();
 
-    let path_large: PathBuf = [
-        config.media_save_dir.clone(),
-        filename.clone().into(),
-        ].iter().collect();
+    // TODO figure out how to use anyhow context properly
+    let img = ImageReader::open(&path_in)
+        .context(format!("cant open path: {}", &path_in.display()))?
+        .with_guessed_format()?
+        .decode()?
+        .to_rgb8()  // convert to rgb8 (i.e. strip alpha channel)
+                    // because jpg doesn't support alpha channel
+                    // and would fail
+        ;
 
-    let img = ImageReader::open(path_in)?.decode()?;
-
-    for size in [&config.image_size_large, &config.image_size_medium] {
-        let sized = imageops::resize(
-            &img, size.0, size.1,
-            imageops::FilterType::Lanczos3
+    for size in [&config.image_size_large, &config.image_size_medium, &config.image_size_thumb] {
+        let (new_w, new_h) = zoom_to_fit(
+            img.width(),
+            img.height(),
+            size.0,
+            size.1
             );
+        let sized = imageops::thumbnail(&img, new_w, new_h);
 
         // TODO anyhow context
 
@@ -123,9 +152,29 @@ pub async fn thumbs_image(
             )?;
     }
 
+    println!("fubar!");
+
     Ok(())
 
 }
+
+pub fn zoom_to_fit(
+    original_width: u32,
+    original_height: u32,
+    target_width: u32,
+    target_height: u32,
+    ) -> (u32, u32) {
+
+    let scale_x = target_width as f32 / original_width as f32;
+    let scale_y = target_height as f32 / original_height as f32;
+    let scale = scale_x.min(scale_y);
+    
+    let new_w = (original_width as f32 * scale).round() as u32;
+    let new_h = (original_height as f32 * scale).round() as u32;
+
+    (new_w, new_h)
+}
+
 
 /// Consume media reader while writing to disk
 /// and calculating hash.
@@ -172,7 +221,7 @@ where
 
     let path_save: PathBuf = [
         config.media_save_dir.clone(),
-        saved_media_filename!(hash).into(),
+        saved_media_filename!(media_id).into(),
         ].iter().collect();
     
     // TODO unwrap

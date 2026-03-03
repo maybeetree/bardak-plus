@@ -156,7 +156,7 @@ impl Api {
         into_json_response(
             media::add_media(
                 &mut reader,
-                &self.config,
+                self.config.clone(),
                 ).await
             )
     }
