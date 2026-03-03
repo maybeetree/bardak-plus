@@ -22,3 +22,11 @@ will create `xxxx_name.up.sql` and `xxxx_name.down.sql`
 - structured sqlx error?
     - maybe clienbt doesnt need to know but for logging?
 
+- thumbs
+    - image:
+        - avif
+        - jpeg
+        - webp
+    - <https://github.com/lamco-admin/jxl-rust-reference>
+        - jxl
+
