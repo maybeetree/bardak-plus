@@ -30,6 +30,7 @@ async fn main() -> Result<()> {
 
     // TODO .nest for different version
     // TODO .data for passing pool/state instead of impl crutch?
+    //      - actually no, impl I like better. Less boilerplate.
 
     Server::new(TcpListener::bind("0.0.0.0:3030"))
         .run(app)

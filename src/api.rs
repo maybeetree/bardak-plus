@@ -23,6 +23,8 @@ use crate::schema::ResAddMedia;
 use crate::db;
 use crate::media;
 use crate::state::State;
+use crate::config::Config;
+use conf::Conf;
 use std::sync::Arc;
 
 use anyhow::Result;
@@ -40,14 +42,17 @@ static SOURCE_ARCHIVE: &'static [u8] = include_bytes!(env!("SOURCE_ARCHIVE"));
 static INDEX_PAGE: &'static str = include_str!(env!("INDEX_PAGE"));
 
 pub struct Api {
+    config: Arc<Config>,
     state: Arc<State>,
 }
 
 #[OpenApi]
 impl Api {
     pub async fn new() -> Result<Self> {
-        let state = State::new().await?;
+        let config = Config::parse();
+        let state = State::new(&config).await?;
         Ok(Self {
+            config: Arc::new(config),
             state: Arc::new(state),
         })
     }
@@ -151,7 +156,7 @@ impl Api {
         into_json_response(
             media::add_media(
                 &mut reader,
-                &self.state.config,
+                &self.config,
                 ).await
             )
     }
