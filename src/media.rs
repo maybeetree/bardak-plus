@@ -39,6 +39,12 @@ macro_rules! saved_media_id {
     };
 }
 
+macro_rules! upload_filename {
+    ($id:expr) => {
+        format!("{}.dat", $id)
+    };
+}
+
 macro_rules! saved_media_filename {
     ($id:expr) => {
         format!("{}.dat", $id)
@@ -67,13 +73,14 @@ pub async fn add_media<R>(
 where
     R: tokio::io::AsyncRead + Unpin,
 {
-    let id = Uuid::new_v4();
+    let task_id = media_task_id!(Uuid::new_v4()).to_string();
     // TODO collision avoidance? Maybe irrelevant with v4
     // but if switch to v7?
 
     let media_id = save_media(
-        &mut reader,
         &config,
+        &mut reader,
+        &task_id,
         ).await?;
 
     // here we clone arc to config because this goes in a different
@@ -87,7 +94,7 @@ where
     );
 
     Ok(schema::ResAddMedia {
-        task_id: media_task_id!(id).to_string(),
+        task_id: task_id,
         media_id: media_id,
     })
 }
@@ -181,15 +188,16 @@ pub fn zoom_to_fit(
 /// Renames saved file to match media id,
 /// return media id.
 async fn save_media<R>(
-        mut reader: R,
         config: &Config,
+        mut reader: R,
+        task_id: &String,
         ) -> anyhow::Result<String>
 where
     R: tokio::io::AsyncRead + Unpin,
 {
     let path_upload: PathBuf = [
         config.media_upload_dir.clone(),
-        format!("{}.dat", uuid::Uuid::new_v4()).into(),
+        upload_filename!(task_id).into(),
         ].iter().collect();
 
     let mut file = tokio::fs::File::create(
@@ -217,7 +225,6 @@ where
     println!("SHA256: {:x}", hash); // Or return/store hash
 
     let media_id = saved_media_id!(hash);
-    
 
     let path_save: PathBuf = [
         config.media_save_dir.clone(),

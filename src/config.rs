@@ -20,6 +20,10 @@ pub struct Config {
     pub media_save_dir: PathBuf,
 
     #[arg(long, env,
+        default_value="./data/media/thumb")]
+    pub media_thumb_dir: PathBuf,
+
+    #[arg(long, env,
         default_value = "1280x720")]
     pub image_size_large: Resolution,
 
