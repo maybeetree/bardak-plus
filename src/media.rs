@@ -1,7 +1,6 @@
 use crate::schema;
 use uuid::Uuid;
 use tokio;
-use tokio::time;
 use tokio::io::AsyncWriteExt;
 use tokio::io::AsyncReadExt;
 use sha2::Sha256;
@@ -9,14 +8,10 @@ use sha2::Digest;
 use crate::config::Config;
 use std::path::PathBuf;
 use tokio::fs::rename;
-use std::io::Cursor;
 use std::sync::Arc;
 use image::ImageReader;
-use image::{imageops, DynamicImage, ImageFormat};
+use image::{imageops, ImageFormat};
 use image::GenericImageView;
-use image::Pixel;
-use image::Primitive;
-use image::ImageBuffer;
 
 use anyhow::Result;
 use anyhow::Context;

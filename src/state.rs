@@ -3,7 +3,6 @@ use sqlx::sqlite::SqlitePool;
 use crate::config::Config;
 use crate::db;
 //use crate::api::Api;
-use conf::Conf;
 use std::fs::create_dir_all;
 use anyhow::Result;
 
