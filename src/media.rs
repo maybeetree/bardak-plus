@@ -33,15 +33,9 @@ macro_rules! saved_media_id {
     };
 }
 
-macro_rules! thumb_id {
-    ($id:expr) => {
-        format!("bardak-thumb--{:x}--", $id)
-    };
-}
-
 macro_rules! thumb_filename {
-    ($id:expr) => {
-        format!("{}.dat", $id)
+    ($hash:expr, $width:expr, $height:expr, $fmt:expr) => {
+        format!("bardak-thumb--{}x{}--{:x}.{}", $width, $height, $hash, $fmt)
     };
 }
 
@@ -150,18 +144,48 @@ pub async fn thumbs_image(
         let sized = imageops::thumbnail(&img, new_w, new_h);
 
         let hash = Sha256::digest(sized.as_raw());
-        let id = thumb_id!(hash);
+        // not really a good reason to use hash as part of id,
+        // could have just used uuid
+
+        // TODO a lot of repetition here, how to refactor?
+        
+        // jpg
+
         let path_in: PathBuf = [
             config.media_thumb_dir.clone(),
-            thumb_filename!(id).into(),
+            thumb_filename!(hash, size.0, size.1, "jpg").into(),
             ].iter().collect();
-
-        // TODO anyhow context
 
         sized.save_with_format(
             path_in,
             ImageFormat::Jpeg
             )?;
+
+        // avif
+
+        let path_in: PathBuf = [
+            config.media_thumb_dir.clone(),
+            thumb_filename!(hash, size.0, size.1, "avif").into(),
+            ].iter().collect();
+
+        sized.save_with_format(
+            path_in,
+            ImageFormat::Avif
+            )?;
+
+        // webp
+
+        let path_in: PathBuf = [
+            config.media_thumb_dir.clone(),
+            thumb_filename!(hash, size.0, size.1, "webp").into(),
+            ].iter().collect();
+
+        sized.save_with_format(
+            path_in,
+            ImageFormat::WebP
+            )?;
+
+        // TODO anyhow context
     }
 
     println!("fubar!");
