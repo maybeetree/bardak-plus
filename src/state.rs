@@ -16,6 +16,8 @@ impl State {
     pub async fn new(config: &Config) -> Result<Self> {
         create_dir_all(&config.media_upload_dir)?;
         create_dir_all(&config.media_save_dir)?;
+        create_dir_all(&config.media_thumb_dir)?;
+        // TODO any way to ensure these get called using the type system??
 
         Ok(Self {
             pool: db::get_db(config.database.as_str())

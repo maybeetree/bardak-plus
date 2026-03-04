@@ -33,7 +33,7 @@ pub struct Config {
 
     #[arg(long, env,
         default_value = "160x90")]
-    pub image_size_thumb: Resolution,
+    pub image_size_small: Resolution,
 }
 
 #[derive(Clone, Debug)]

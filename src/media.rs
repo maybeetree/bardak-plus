@@ -11,7 +11,6 @@ use tokio::fs::rename;
 use std::sync::Arc;
 use image::ImageReader;
 use image::{imageops, ImageFormat};
-use image::GenericImageView;
 
 use anyhow::Result;
 use anyhow::Context;
@@ -34,6 +33,18 @@ macro_rules! saved_media_id {
     };
 }
 
+macro_rules! thumb_id {
+    ($id:expr) => {
+        format!("bardak-thumb--{:x}--", $id)
+    };
+}
+
+macro_rules! thumb_filename {
+    ($id:expr) => {
+        format!("{}.dat", $id)
+    };
+}
+
 macro_rules! upload_filename {
     ($id:expr) => {
         format!("{}.dat", $id)
@@ -43,18 +54,6 @@ macro_rules! upload_filename {
 macro_rules! saved_media_filename {
     ($id:expr) => {
         format!("{}.dat", $id)
-    };
-}
-
-macro_rules! thumb_id {
-    ($id:expr) => {
-        format!("bardak-thumb--{:x}--", $id)
-    };
-}
-
-macro_rules! thumb_filename {
-    ($id:expr) => {
-        format!("{}.dat", thumb_id!($id))
     };
 }
 
@@ -137,7 +136,11 @@ pub async fn thumbs_image(
                     // and would fail
         ;
 
-    for size in [&config.image_size_large, &config.image_size_medium, &config.image_size_thumb] {
+    for size in [
+            &config.image_size_large,
+            &config.image_size_medium,
+            &config.image_size_small
+    ] {
         let (new_w, new_h) = zoom_to_fit(
             img.width(),
             img.height(),
@@ -146,10 +149,17 @@ pub async fn thumbs_image(
             );
         let sized = imageops::thumbnail(&img, new_w, new_h);
 
+        let hash = Sha256::digest(sized.as_raw());
+        let id = thumb_id!(hash);
+        let path_in: PathBuf = [
+            config.media_thumb_dir.clone(),
+            thumb_filename!(id).into(),
+            ].iter().collect();
+
         // TODO anyhow context
 
         sized.save_with_format(
-            format!("fubar{}.jpeg", size.0).to_string(),
+            path_in,
             ImageFormat::Jpeg
             )?;
     }
