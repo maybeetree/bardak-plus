@@ -184,3 +184,9 @@ pub async fn add_item(
     })
 }
 
+
+pub async fn register_thumbs(
+        pool: &SqlitePool,
+        ) -> ()
+{
+}

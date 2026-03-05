@@ -80,6 +80,7 @@ venv*
 *.xcf
 *.svg
 *.jpg
+*.webp
 *.jpeg
 *.png
 *.avif

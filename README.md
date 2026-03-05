@@ -15,6 +15,8 @@
 sqlx migate add --sequential name_of_migration
 ```
 
+- `xbps-install -Syu pkg-config openssl-devel`
+
 will create `xxxx_name.up.sql` and `xxxx_name.down.sql`
 
 ## TODO
