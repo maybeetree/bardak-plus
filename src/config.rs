@@ -1,9 +1,9 @@
 use conf::Conf;
 use std::path::PathBuf;
-use std::str::FromStr;
-use anyhow::Context;
 use anyhow::Result;
-use anyhow::Error;
+use std::collections::HashMap;
+use std::fs;
+use serde::Deserialize;
 
 #[derive(Conf)]
 pub struct Config {
@@ -23,38 +23,61 @@ pub struct Config {
         default_value="./data/media/thumb")]
     pub media_thumb_dir: PathBuf,
 
-    #[arg(long, env,
-        default_value = "1280x720")]
-    pub image_size_large: Resolution,
+    #[arg(long, env)]
+    pub thumbspecs: Option<PathBuf>,
 
-    #[arg(long, env, 
-        default_value = "640x360")]
-    pub image_size_medium: Resolution,
-
-    #[arg(long, env,
-        default_value = "160x90")]
-    pub image_size_small: Resolution,
 }
 
-#[derive(Clone, Debug)]
-pub struct Resolution(pub u32, pub u32);
+/// Complicated config that cannot (or should not)
+/// be read as a string from env/args and instead
+/// is always read from file
+pub struct LoadedConfig {
+    pub thumbspecs: ThumbSpecs,
+}
 
-impl FromStr for Resolution {
-    type Err = Error;  // this tells rust that we want to use anyhow error
-                       // as our error type for this struct
+#[derive(Clone, Debug, Deserialize)]
+pub struct ThumbSpec {
+    pub width: u32,
+    pub height: u32,
+    pub format: String,
+}
 
-    fn from_str(s: &str) -> Result<Self> {
-        let parts: Vec<&str> = s.split('x').collect();
+macro_rules! spec {
+    ($name:expr, $w:expr, $h:expr, $fmt:expr) => {
+        ($name.to_string(), ThumbSpec { width: $w, height: $h, format: $fmt.to_string() })
+    };
+}
 
-        anyhow::ensure!(parts.len() == 2, "expected format 'WIDTHxHEIGHT'");
+#[derive(Clone, Debug, Deserialize)]
+pub struct ThumbSpecs {
+    pub specs: HashMap<String, ThumbSpec>,
+}
 
-        let width = parts[0].parse::<u32>()
-            .context("invalid width")?;
-        let height = parts[1].parse::<u32>()
-            .context("invalid height")?;
-
-        Ok(Resolution(width, height))
+impl ThumbSpecs {
+    pub fn load(source: &Option<PathBuf>) -> Result<Self> {
+        match source {
+            None => {
+                Ok(Self {
+                    specs: HashMap::from([
+                            spec!("small-jpg", 160, 90, "jpg"),
+                            spec!("small-avif", 160, 90, "avif"),
+                            spec!("small-webp", 160, 90, "webp"),
+                            spec!("mid-jpg", 640, 360, "jpg"),
+                            spec!("mid-avif", 640, 360, "avif"),
+                            spec!("mid-webp", 640, 360, "webp"),
+                            spec!("big-jpg", 1280, 720, "jpg"),
+                            spec!("big-avif", 1280, 720, "avif"),
+                            spec!("big-webp", 1280, 720, "webp"),
+                    ])
+                })
+            },
+            // TODO nayhow ctx
+            Some(path) => {
+                Ok(serde_json::from_str(
+                        &fs::read_to_string(path)?
+                    )?)
+            }
+        }
     }
 }
-
 

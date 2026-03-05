@@ -24,6 +24,8 @@ use crate::db;
 use crate::media;
 use crate::state::State;
 use crate::config::Config;
+use crate::config::LoadedConfig;
+use crate::config::ThumbSpecs;
 use conf::Conf;
 use std::sync::Arc;
 
@@ -43,6 +45,7 @@ static INDEX_PAGE: &'static str = include_str!(env!("INDEX_PAGE"));
 
 pub struct Api {
     config: Arc<Config>,
+    lconfig: Arc<LoadedConfig>,
     state: Arc<State>,
 }
 
@@ -50,9 +53,13 @@ pub struct Api {
 impl Api {
     pub async fn new() -> Result<Self> {
         let config = Config::parse();
+        let lconfig = LoadedConfig {
+            thumbspecs: ThumbSpecs::load(&config.thumbspecs)?,
+        };
         let state = State::new(&config).await?;
         Ok(Self {
             config: Arc::new(config),
+            lconfig: Arc::new(lconfig),
             state: Arc::new(state),
         })
     }
@@ -157,6 +164,7 @@ impl Api {
             media::add_media(
                 &mut reader,
                 self.config.clone(),
+                self.lconfig.clone(),
                 ).await
             )
     }

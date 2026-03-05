@@ -6,11 +6,12 @@ use tokio::io::AsyncReadExt;
 use sha2::Sha256;
 use sha2::Digest;
 use crate::config::Config;
+use crate::config::LoadedConfig;
 use std::path::PathBuf;
 use tokio::fs::rename;
 use std::sync::Arc;
 use image::ImageReader;
-use image::{imageops, ImageFormat};
+use image::imageops;
 
 use anyhow::Result;
 use anyhow::Context;
@@ -34,8 +35,8 @@ macro_rules! saved_media_id {
 }
 
 macro_rules! thumb_filename {
-    ($hash:expr, $width:expr, $height:expr, $fmt:expr) => {
-        format!("bardak-thumb--{}x{}--{:x}.{}", $width, $height, $hash, $fmt)
+    ($hash:expr, $name:expr, $fmt:expr) => {
+        format!("bardak-thumb--{}--{:x}.{}", $name, $hash, $fmt)
     };
 }
 
@@ -57,6 +58,7 @@ macro_rules! saved_media_filename {
 pub async fn add_media<R>(
         mut reader: R,
         config: Arc<Config>,
+        lconfig: Arc<LoadedConfig>,
     ) -> Result<schema::ResAddMedia>
 where
     R: tokio::io::AsyncRead + Unpin,
@@ -77,7 +79,7 @@ where
     
     tokio::spawn(
         error_logger(
-            make_thumbs(config.clone(), media_id.clone())
+            make_thumbs(config.clone(), lconfig.clone(), media_id.clone())
         )
     );
 
@@ -100,16 +102,18 @@ where
 
 pub async fn make_thumbs(
     config: Arc<Config>,
+    lconfig: Arc<LoadedConfig>,
     media_id: String,
     ) -> Result<()> {
 
-    thumbs_image(&config, media_id).await
+    thumbs_image(&config, &lconfig, media_id).await
 }
 
 /// Generate thumbs with `image` crate
 /// (avif, webp, jpeg)
 pub async fn thumbs_image(
     config: &Config,
+    lconfig: &LoadedConfig,
     media_id: String,
     ) -> Result<()> {
 
@@ -130,16 +134,12 @@ pub async fn thumbs_image(
                     // and would fail
         ;
 
-    for size in [
-            &config.image_size_large,
-            &config.image_size_medium,
-            &config.image_size_small
-    ] {
+    for (spec_name, spec) in &lconfig.thumbspecs.specs {
         let (new_w, new_h) = zoom_to_fit(
             img.width(),
             img.height(),
-            size.0,
-            size.1
+            spec.width,
+            spec.height
             );
         let sized = imageops::thumbnail(&img, new_w, new_h);
 
@@ -147,43 +147,12 @@ pub async fn thumbs_image(
         // not really a good reason to use hash as part of id,
         // could have just used uuid
 
-        // TODO a lot of repetition here, how to refactor?
-        
-        // jpg
-
-        let path_in: PathBuf = [
+        let path: PathBuf = [
             config.media_thumb_dir.clone(),
-            thumb_filename!(hash, size.0, size.1, "jpg").into(),
+            thumb_filename!(hash, spec_name, spec.format).into(),
             ].iter().collect();
 
-        sized.save_with_format(
-            path_in,
-            ImageFormat::Jpeg
-            )?;
-
-        // avif
-
-        let path_in: PathBuf = [
-            config.media_thumb_dir.clone(),
-            thumb_filename!(hash, size.0, size.1, "avif").into(),
-            ].iter().collect();
-
-        sized.save_with_format(
-            path_in,
-            ImageFormat::Avif
-            )?;
-
-        // webp
-
-        let path_in: PathBuf = [
-            config.media_thumb_dir.clone(),
-            thumb_filename!(hash, size.0, size.1, "webp").into(),
-            ].iter().collect();
-
-        sized.save_with_format(
-            path_in,
-            ImageFormat::WebP
-            )?;
+        sized.save(path)?;
 
         // TODO anyhow context
     }
