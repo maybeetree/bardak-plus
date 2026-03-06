@@ -28,9 +28,6 @@ use crate::config::get_config;
 use crate::config::get_lconfig;
 use crate::config::Config;
 use crate::config::LoadedConfig;
-use crate::config::ThumbSpecs;
-use conf::Conf;
-use std::sync::Arc;
 
 use anyhow::Result;
 
@@ -165,7 +162,7 @@ impl Api {
             media::add_media(
                 &mut reader,
                 &self.config,
-                self.lconfig.clone(),
+                self.lconfig,
                 ).await
             )
     }

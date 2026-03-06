@@ -9,7 +9,6 @@ use crate::config::Config;
 use crate::config::LoadedConfig;
 use std::path::PathBuf;
 use tokio::fs::rename;
-use std::sync::Arc;
 use image::ImageReader;
 use image::imageops;
 
