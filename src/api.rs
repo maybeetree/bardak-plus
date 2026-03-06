@@ -22,6 +22,7 @@ use crate::schema::ResAddMedia;
 //use crate::schema::ReqGetLatestRows;
 use crate::db;
 use crate::media;
+use crate::tasks;
 use crate::state::State;
 use crate::state::get_state;
 use crate::config::get_config;
@@ -159,7 +160,7 @@ impl Api {
         //Ok(Json(bytes.len()))
 
         into_json_response(
-            media::add_media(
+            tasks::add_media(
                 &mut reader,
                 &self.config,
                 self.lconfig,

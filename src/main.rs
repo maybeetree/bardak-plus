@@ -15,6 +15,7 @@ mod schema;
 mod api;
 mod state;
 mod media;
+mod tasks;
 
 #[tokio::main]
 async fn main() -> Result<()> {

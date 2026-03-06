@@ -30,6 +30,10 @@ macro_rules! media_task_id {
     };
 }
 
+pub fn media_task_id(id: Uuid) -> String {
+    media_task_id(id).to_string()
+}
+
 macro_rules! saved_media_id {
     ($id:expr) => {
         format!("bardak-saved-media--{:x}--", $id)
@@ -52,57 +56,6 @@ macro_rules! saved_media_filename {
     ($id:expr) => {
         format!("{}.dat", $id)
     };
-}
-
-
-/// Save media to disk from reader
-/// and launch thumbnailer task
-pub async fn add_media<R>(
-        mut reader: R,
-        config: &'static Config,
-        lconfig: &'static LoadedConfig,
-        pool: &'static SqlitePool,
-    ) -> Result<schema::ResAddMedia>
-where
-    R: tokio::io::AsyncRead + Unpin,
-{
-    let task_id = media_task_id!(Uuid::new_v4()).to_string();
-    // TODO collision avoidance? Maybe irrelevant with v4
-    // but if switch to v7?
-
-    let media_id = save_media(
-        &config,
-        &mut reader,
-        &task_id,
-        ).await?;
-
-    // here we clone arc to config because this goes in a different
-    // thread (not necesarily os thread -- remember tokio)
-    // and outlives this function
-    
-    db::start_thumbs(&pool, &media_id, lconfig.thumbspecs.specs.keys()).await?;
-    
-    tokio::spawn(
-        error_logger(
-            make_thumbs(&config, &lconfig, &pool, media_id.clone())
-        )
-    );
-
-    Ok(schema::ResAddMedia {
-        task_id: task_id,
-        media_id: media_id,
-    })
-}
-
-pub async fn error_logger<Fut>(f: Fut)
-where
-    Fut: std::future::Future<Output = Result<(), anyhow::Error>> + Send + 'static,
-{
-    eprintln!("pre");
-    if let Err(e) = f.await {
-        eprintln!("Task failed: {}", e);
-    }
-    eprintln!("post");
 }
 
 pub async fn make_thumbs(
@@ -202,8 +155,9 @@ pub fn zoom_to_fit(
 /// and calculating hash.
 /// Renames saved file to match media id,
 /// return media id.
-async fn save_media<R>(
-        config: &Config,
+pub async fn save_media<R>(
+        media_upload_dir: &PathBuf,
+        media_save_dir: &PathBuf,
         mut reader: R,
         task_id: &String,
         ) -> anyhow::Result<String>
@@ -211,7 +165,7 @@ where
     R: tokio::io::AsyncRead + Unpin,
 {
     let path_upload: PathBuf = [
-        config.media_upload_dir.clone(),
+        media_upload_dir.clone(),
         upload_filename!(task_id).into(),
         ].iter().collect();
 
@@ -242,7 +196,7 @@ where
     let media_id = saved_media_id!(hash);
 
     let path_save: PathBuf = [
-        config.media_save_dir.clone(),
+        media_save_dir.clone(),
         saved_media_filename!(media_id).into(),
         ].iter().collect();
     
