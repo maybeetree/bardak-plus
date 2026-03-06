@@ -11,6 +11,9 @@ use std::path::PathBuf;
 use tokio::fs::rename;
 use image::ImageReader;
 use image::imageops;
+use std::collections::HashMap;
+use sqlx::sqlite::SqlitePool;
+use crate::db;
 
 use anyhow::Result;
 use anyhow::Context;
@@ -58,6 +61,7 @@ pub async fn add_media<R>(
         mut reader: R,
         config: &'static Config,
         lconfig: &'static LoadedConfig,
+        pool: &'static SqlitePool,
     ) -> Result<schema::ResAddMedia>
 where
     R: tokio::io::AsyncRead + Unpin,
@@ -76,9 +80,11 @@ where
     // thread (not necesarily os thread -- remember tokio)
     // and outlives this function
     
+    db::start_thumbs(&pool, &media_id, lconfig.thumbspecs.specs.keys()).await?;
+    
     tokio::spawn(
         error_logger(
-            make_thumbs(&config, &lconfig, media_id.clone())
+            make_thumbs(&config, &lconfig, &pool, media_id.clone())
         )
     );
 
@@ -102,19 +108,23 @@ where
 pub async fn make_thumbs(
     config: &Config,
     lconfig: &LoadedConfig,
+    pool: &SqlitePool,
     media_id: String,
     ) -> Result<()> {
 
-    thumbs_image(&config, &lconfig, media_id).await
+    let thumbs = thumbs_image(&config, &lconfig, &media_id).await?;
+    db::finish_thumbs(&pool, &media_id, &thumbs).await?;
+    Ok(())
 }
 
 /// Generate thumbs with `image` crate
 /// (avif, webp, jpeg)
+/// return mapping thumb spec name -> thumb filename
 pub async fn thumbs_image(
     config: &Config,
     lconfig: &LoadedConfig,
-    media_id: String,
-    ) -> Result<()> {
+    media_id: &String,
+    ) -> Result<HashMap<String, String>> {
 
     println!("barfoo!");
 
@@ -133,6 +143,10 @@ pub async fn thumbs_image(
                     // and would fail
         ;
 
+    let mut thumbs = HashMap::new();
+    // TODO a lot of possible optimizations here
+    // like prealloc since keys are known after reading config
+
     for (spec_name, spec) in &lconfig.thumbspecs.specs {
         let (new_w, new_h) = zoom_to_fit(
             img.width(),
@@ -145,20 +159,24 @@ pub async fn thumbs_image(
         let hash = Sha256::digest(sized.as_raw());
         // not really a good reason to use hash as part of id,
         // could have just used uuid
+        
+        let filename = thumb_filename!(hash, spec_name, spec.format);
 
         let path: PathBuf = [
             config.media_thumb_dir.clone(),
-            thumb_filename!(hash, spec_name, spec.format).into(),
+            filename.clone().into(),
             ].iter().collect();
 
         sized.save(path)?;
+
+        thumbs.insert(spec_name.clone(), filename.clone());
 
         // TODO anyhow context
     }
 
     println!("fubar!");
 
-    Ok(())
+    Ok(thumbs)
 
 }
 

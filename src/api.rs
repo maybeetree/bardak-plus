@@ -163,6 +163,7 @@ impl Api {
                 &mut reader,
                 &self.config,
                 self.lconfig,
+                &self.state.pool,
                 ).await
             )
     }

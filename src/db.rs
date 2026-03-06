@@ -5,6 +5,7 @@ use sqlx::sqlite::SqliteConnectOptions;
 use sqlx::migrate::MigrateError;
 use itertools::Itertools;
 use tracing::log::LevelFilter;
+use std::collections::HashMap;
 
 use crate::schema;
 
@@ -183,4 +184,71 @@ pub async fn add_item(
         item_id: item_id
     })
 }
+
+/// Record into database that multiple thumbs are being created now.
+pub async fn start_thumbs<I>(
+        pool: &SqlitePool,
+        original: &String,
+        spec_names: I,
+        ) -> Result<(), sqlx::Error>
+where
+        I: IntoIterator,
+        I::Item: AsRef<str>
+{
+    let mut tx = pool.begin().await?;
+
+    for spec_name in spec_names {
+        sqlx::query("
+            INSERT INTO thumbs (original, spec, ready)
+            VALUES (?, ?, false);
+            ")
+            .bind(&original)
+            .bind(&spec_name.as_ref())
+            .execute(&mut *tx)
+            .await?;
+    }
+
+
+    tx.commit().await?;
+
+    Ok(())
+}
+
+/// record into database that multiple thumbs have finished processing
+/// and are now available for users to download
+pub async fn finish_thumbs(
+        pool: &SqlitePool,
+        original: &String,
+        thumbs: &HashMap<String, String>,
+        ) -> Result<(), sqlx::Error>
+{
+    let mut tx = pool.begin().await?;
+
+    // TODO check that query updated correct number of rows
+    // and return error if didnt??
+
+    for (spec_name, thumb_file) in thumbs {
+        sqlx::query("
+            UPDATE thumbs
+            SET
+                ready = true,
+                thumb = ?
+            WHERE
+                original = ?
+                AND spec = ?
+            ;
+            ")
+            .bind(&thumb_file)
+            .bind(&original)
+            .bind(&spec_name)
+            .execute(&mut *tx)
+            .await?;
+    }
+
+
+    tx.commit().await?;
+
+    Ok(())
+}
+
 
