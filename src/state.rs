@@ -5,8 +5,15 @@ use crate::db;
 //use crate::api::Api;
 use std::fs::create_dir_all;
 use anyhow::Result;
+use tokio::sync::OnceCell;
 
 
+static STATE: OnceCell<State> = OnceCell::const_new();
+
+pub async fn get_state(config: &Config) -> Result<&'static State> {
+    let state = State::new(&config).await?;
+    Ok(STATE.get_or_init(async || { state } ).await)
+}
 
 pub struct State {
     pub pool: SqlitePool,

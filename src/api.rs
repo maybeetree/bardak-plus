@@ -23,6 +23,7 @@ use crate::schema::ResAddMedia;
 use crate::db;
 use crate::media;
 use crate::state::State;
+use crate::state::get_state;
 use crate::config::get_config;
 use crate::config::get_lconfig;
 use crate::config::Config;
@@ -48,7 +49,7 @@ static INDEX_PAGE: &'static str = include_str!(env!("INDEX_PAGE"));
 pub struct Api {
     config: &'static Config,
     lconfig: &'static LoadedConfig,
-    state: Arc<State>,
+    state: &'static State,
 }
 
 #[OpenApi]
@@ -56,11 +57,11 @@ impl Api {
     pub async fn new() -> Result<Self> {
         let config = get_config().await;
         let lconfig = get_lconfig(&config).await?;
-        let state = State::new(&config).await?;
+        let state = get_state(&config).await?;
         Ok(Self {
             config: config,
             lconfig: lconfig,
-            state: Arc::new(state),
+            state: state,
         })
     }
 
