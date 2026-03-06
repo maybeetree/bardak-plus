@@ -1,4 +1,3 @@
-use crate::schema;
 use uuid::Uuid;
 use tokio;
 use tokio::io::AsyncWriteExt;
@@ -31,7 +30,7 @@ macro_rules! media_task_id {
 }
 
 pub fn media_task_id(id: Uuid) -> String {
-    media_task_id(id).to_string()
+    media_task_id!(id).to_string()
 }
 
 macro_rules! saved_media_id {
