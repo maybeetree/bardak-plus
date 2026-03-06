@@ -23,6 +23,8 @@ use crate::schema::ResAddMedia;
 use crate::db;
 use crate::media;
 use crate::state::State;
+use crate::config::get_config;
+use crate::config::get_lconfig;
 use crate::config::Config;
 use crate::config::LoadedConfig;
 use crate::config::ThumbSpecs;
@@ -44,22 +46,20 @@ static SOURCE_ARCHIVE: &'static [u8] = include_bytes!(env!("SOURCE_ARCHIVE"));
 static INDEX_PAGE: &'static str = include_str!(env!("INDEX_PAGE"));
 
 pub struct Api {
-    config: Arc<Config>,
-    lconfig: Arc<LoadedConfig>,
+    config: &'static Config,
+    lconfig: &'static LoadedConfig,
     state: Arc<State>,
 }
 
 #[OpenApi]
 impl Api {
     pub async fn new() -> Result<Self> {
-        let config = Config::parse();
-        let lconfig = LoadedConfig {
-            thumbspecs: ThumbSpecs::load(&config.thumbspecs)?,
-        };
+        let config = get_config().await;
+        let lconfig = get_lconfig(&config).await?;
         let state = State::new(&config).await?;
         Ok(Self {
-            config: Arc::new(config),
-            lconfig: Arc::new(lconfig),
+            config: config,
+            lconfig: lconfig,
             state: Arc::new(state),
         })
     }
@@ -163,7 +163,7 @@ impl Api {
         into_json_response(
             media::add_media(
                 &mut reader,
-                self.config.clone(),
+                &self.config,
                 self.lconfig.clone(),
                 ).await
             )

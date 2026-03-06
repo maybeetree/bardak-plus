@@ -4,6 +4,7 @@ use anyhow::Result;
 use std::collections::HashMap;
 use std::fs;
 use serde::Deserialize;
+use tokio::sync::OnceCell;
 
 #[derive(Conf)]
 pub struct Config {
@@ -79,5 +80,19 @@ impl ThumbSpecs {
             }
         }
     }
+}
+
+static CONFIG: OnceCell<Config> = OnceCell::const_new();
+static LCONFIG: OnceCell<LoadedConfig> = OnceCell::const_new();
+
+pub async fn get_config() -> &'static Config {
+    CONFIG.get_or_init(async || { Config::parse() } ).await
+}
+
+pub async fn get_lconfig(config: &Config) -> Result<&'static LoadedConfig> {
+    let thumbspecs = ThumbSpecs::load(&config.thumbspecs)?;
+    Ok(LCONFIG.get_or_init(async || { LoadedConfig {
+            thumbspecs: thumbspecs,
+    } } ).await)
 }
 

@@ -57,8 +57,8 @@ macro_rules! saved_media_filename {
 /// and launch thumbnailer task
 pub async fn add_media<R>(
         mut reader: R,
-        config: Arc<Config>,
-        lconfig: Arc<LoadedConfig>,
+        config: &'static Config,
+        lconfig: &'static LoadedConfig,
     ) -> Result<schema::ResAddMedia>
 where
     R: tokio::io::AsyncRead + Unpin,
@@ -79,7 +79,7 @@ where
     
     tokio::spawn(
         error_logger(
-            make_thumbs(config.clone(), lconfig.clone(), media_id.clone())
+            make_thumbs(&config, &lconfig, media_id.clone())
         )
     );
 
@@ -101,8 +101,8 @@ where
 }
 
 pub async fn make_thumbs(
-    config: Arc<Config>,
-    lconfig: Arc<LoadedConfig>,
+    config: &Config,
+    lconfig: &LoadedConfig,
     media_id: String,
     ) -> Result<()> {
 
