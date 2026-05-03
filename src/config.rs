@@ -60,15 +60,18 @@ impl ThumbSpecs {
             None => {
                 Ok(Self {
                     specs: HashMap::from([
-                            spec!("small-jpg", 160, 90, "jpg"),
-                            spec!("small-avif", 160, 90, "avif"),
-                            spec!("small-webp", 160, 90, "webp"),
-                            spec!("mid-jpg", 640, 360, "jpg"),
-                            spec!("mid-avif", 640, 360, "avif"),
-                            spec!("mid-webp", 640, 360, "webp"),
-                            spec!("big-jpg", 1280, 720, "jpg"),
-                            spec!("big-avif", 1280, 720, "avif"),
-                            spec!("big-webp", 1280, 720, "webp"),
+                            //spec!("small-jpg", 160, 90, "jpg"),
+                            //spec!("small-avif", 160, 90, "avif"),
+                            //spec!("small-webp", 160, 90, "webp"),
+                            spec!("small-jxl", 160, 90, "jxl"),
+                            //spec!("mid-jpg", 640, 360, "jpg"),
+                            //spec!("mid-avif", 640, 360, "avif"),
+                            //spec!("mid-webp", 640, 360, "webp"),
+                            spec!("mid-jxl", 640, 360, "jxl"),
+                            //spec!("big-jpg", 1280, 720, "jpg"),
+                            //spec!("big-avif", 1280, 720, "avif"),
+                            //spec!("big-webp", 1280, 720, "webp"),
+                            spec!("big-jxl", 1280, 720, "jxl"),
                     ])
                 })
             },

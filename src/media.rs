@@ -8,11 +8,14 @@ use crate::config::Config;
 use crate::config::LoadedConfig;
 use std::path::PathBuf;
 use tokio::fs::rename;
+use std::fs::File;
 use image::ImageReader;
 use image::imageops;
 use std::collections::HashMap;
 use sqlx::sqlite::SqlitePool;
 use crate::db;
+use zune_core;
+use zune_jpegxl::JxlSimpleEncoder;
 
 use anyhow::Result;
 use anyhow::Context;
@@ -64,15 +67,15 @@ pub async fn make_thumbs(
     media_id: String,
     ) -> Result<()> {
 
-    let thumbs = thumbs_image(&config, &lconfig, &media_id).await?;
+    let thumbs = thumbs(&config, &lconfig, &media_id).await?;
     db::finish_thumbs(&pool, &media_id, &thumbs).await?;
     Ok(())
 }
 
-/// Generate thumbs with `image` crate
-/// (avif, webp, jpeg)
+/// Generate thumbs
+/// (avif, webp, jpeg, jxl)
 /// return mapping thumb spec name -> thumb filename
-pub async fn thumbs_image(
+pub async fn thumbs(
     config: &Config,
     lconfig: &LoadedConfig,
     media_id: &String,
@@ -119,7 +122,25 @@ pub async fn thumbs_image(
             filename.clone().into(),
             ].iter().collect();
 
-        sized.save(path)?;
+        match spec.format.as_str() {
+            "jpg" | "avif" | "webp" => {
+                sized.save(path)?;
+            },
+            "jxl" => {
+                let encoder = JxlSimpleEncoder::new(
+                    &sized,
+                    zune_core::options::EncoderOptions::new(
+                        new_w as usize,  // TODO will this
+                        new_h as usize, // cause issues?
+                        zune_core::colorspace::ColorSpace::RGB,
+                        zune_core::bit_depth::BitDepth::Eight
+                        )
+                    );
+                let mut file = File::create(&path)?;
+                encoder.encode(&mut file)?;
+            },
+            _ => panic!("Unknown format!"),
+        }
 
         thumbs.insert(spec_name.clone(), filename.clone());
 

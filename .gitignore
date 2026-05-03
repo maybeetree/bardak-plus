@@ -119,4 +119,5 @@ schema.dot
 *.sqlite-shm
 *.sqlite-wal
 
+data
 

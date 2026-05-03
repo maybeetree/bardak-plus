@@ -227,6 +227,8 @@ dependencies = [
  "tracing-subscriber",
  "uuid",
  "walkdir",
+ "zune-core 0.5.1",
+ "zune-jpegxl",
 ]
 
 [[package]]
@@ -3609,6 +3611,15 @@ name = "zune-jpeg"
 version = "0.5.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "410e9ecef634c709e3831c2cfdb8d9c32164fae1c67496d5b68fff728eec37fe"
+dependencies = [
+ "zune-core 0.5.1",
+]
+
+[[package]]
+name = "zune-jpegxl"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cba11ecd07cc23351500e840ae03841b7e4997923ec8e4832ee3ae199ea0b6b4"
 dependencies = [
  "zune-core 0.5.1",
 ]

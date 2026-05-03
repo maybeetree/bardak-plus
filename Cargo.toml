@@ -23,6 +23,8 @@ uuid = { version = "1.20.0", features = ["v4"] }
 sha2 = "0.10"
 anyhow = "1"
 image = "0.25.9"
+zune-jpegxl = "0.5.2"
+zune-core = "0.5.1"
 #sqlx-cli = "0.8.6"
 
 #[profile.release-static]
