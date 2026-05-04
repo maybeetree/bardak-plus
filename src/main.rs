@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
     let app = Route::new()
         .nest("/", api_service)
         .nest("/docs", ui)
-        .nest("/unstable/thumbs", thumbs) // TODO sync version with api??
+        .nest("/api/unstable/thumbs", thumbs) // TODO sync version with api??
         ;
 
     // TODO .nest for different version
