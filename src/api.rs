@@ -19,6 +19,7 @@ use crate::schema::ResLatestItems;
 use crate::schema::ResAddItem;
 use crate::schema::ReqAddItem;
 use crate::schema::ResAddMedia;
+use crate::schema::ResGetThumbNames;
 //use crate::schema::ReqGetLatestRows;
 use crate::db;
 use crate::tasks;
@@ -164,6 +165,23 @@ impl Api {
                 &self.config,
                 self.lconfig,
                 &self.state.pool,
+                ).await
+            )
+    }
+
+    /// get thumb names by media id
+    #[oai(path = "/api/unstable/get-thumb-names", method = "get")]
+    async fn get_thumb_names(
+            &self,
+            #[oai()] original: Query<String>,
+            #[oai(default = "schema::default_spec")] spec: Query<Option<String>>,
+            ) -> JsonResponse<ResGetThumbNames> {
+
+        into_json_response(
+            db::get_thumb_names(
+                &self.state.pool,
+                &original,
+                &spec,
                 ).await
             )
     }

@@ -251,4 +251,63 @@ pub async fn finish_thumbs(
     Ok(())
 }
 
+// Return all thumb IDs for a given saved media ID
+// and spec.
+// Do not pass spec to get all thumbs for this media id.
+pub async fn get_thumb_names(
+        pool: &SqlitePool,
+        original: &String,
+        spec: &Option<String>
+        ) -> Result<schema::ResGetThumbNames, sqlx::Error>
+{
+    // TODO query builder API? Or maybe not?
+    //
+    let rows = match spec {
+        None => sqlx::query(
+            r#"
+                SELECT
+                    thumb
+                FROM thumbs
+                WHERE
+                    original = ?
+                    AND
+                    ready = true
+                "#,
+            )
+            .bind(original)
+            ,
+        Some(spec) => sqlx::query(
+            r#"
+                SELECT
+                    thumb
+                FROM thumbs
+                WHERE
+                    original = ?
+                    AND
+                    ready = true
+                    AND
+                    spec = ?
+                "#,
+            )
+            .bind(original)
+            .bind(spec)
+            ,
+        }
+        .fetch_all(pool)
+        .await?
+        ;
+
+    Ok(schema::ResGetThumbNames {
+        thumbs: rows
+            .into_iter()
+            .map(|row| row
+                .try_get::<String, _>("thumb")
+                .expect("thumb should not be null"), // TODO expoect
+            )
+            .collect(),
+    })
+}
+
+
+
 

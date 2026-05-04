@@ -89,12 +89,22 @@ pub struct ResAddMedia {
     pub media_id: String,
 }
 
+/// Get thumbs response schema
+#[derive(Debug, Object, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct ResGetThumbNames {
+    pub thumbs: Vec<String>,
+}
+
 pub fn default_limit() -> i64 {
     100
 }
 
 pub fn default_offset() -> i64 {
     0
+}
+
+pub fn default_spec() -> Option<String> {
+    None
 }
 
 
