@@ -63,6 +63,19 @@ impl Api {
         })
     }
 
+    pub async fn new_manual(
+            config: &'static Config,
+            lconfig: &'static LoadedConfig,
+            state: &'static State,
+            ) -> Result<Self> {
+        Ok(Self {
+            config: config,
+            lconfig: lconfig,
+            state: state,
+        })
+    }
+
+
     /// Information endpoint
     ///
     /// This method returns some basic information about
@@ -169,7 +182,7 @@ impl Api {
             )
     }
 
-    /// get thumb names by media id
+    /// get thumb names by media id and spec
     #[oai(path = "/api/unstable/get-thumb-names", method = "get")]
     async fn get_thumb_names(
             &self,
@@ -185,6 +198,7 @@ impl Api {
                 ).await
             )
     }
+
 }
 
 

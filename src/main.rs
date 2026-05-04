@@ -2,9 +2,14 @@
 use anyhow::Result;
 use poem::Route;
 use poem::Server;
+use poem::endpoint::StaticFilesEndpoint;
 use poem::listener::TcpListener;
 use poem_openapi::OpenApiService;
 use tracing_subscriber; // warp logging
+
+use crate::state::get_state;
+use crate::config::get_config;
+use crate::config::get_lconfig;
 
 use crate::api::Api;
 //use crate::app::App;
@@ -21,13 +26,31 @@ mod tasks;
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init(); // warp logging
 
+
+    let config = get_config().await;
+    let lconfig = get_lconfig(&config).await?;
+    let state = get_state(&config).await?;
+
+    let api = Api::new_manual(&config, &lconfig, &state).await?;
+
+    // TODO weird dance here with `config` let caller get it then pass it
+
+    let thumbs = StaticFilesEndpoint::new(config.media_thumb_dir.clone())
+        .show_files_listing()
+        //.index_file("index.html")
+        ;
+
     let api_service =
-        OpenApiService::new(Api::new().await?, "Hello World", "1.0")
+        OpenApiService::new(api, "Hello World", "1.0")
         .server("http://localhost:3030");
+
     let ui = api_service.swagger_ui();
+
     let app = Route::new()
         .nest("/", api_service)
-        .nest("/docs", ui);
+        .nest("/docs", ui)
+        .nest("/unstable/thumbs", thumbs) // TODO sync version with api??
+        ;
 
     // TODO .nest for different version
     // TODO .data for passing pool/state instead of impl crutch?
