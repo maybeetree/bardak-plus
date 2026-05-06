@@ -1,34 +1,46 @@
-# foo
+# Bardak Plus: Inventory management for everyone
 
-## Queries
+This is a VERY EARLY WORK IN PROGRESS REPO!
 
-1. `cargo install sqlx-cli`
-1. `sqlx db setup`
-    - reads .env
-1. `cargo sqlx prepare`
-1. (optional) `git add .sqlx`
-1. `cargo run`
+The idea is to make an API (and eventually webapp, android app,
+desktop client)
+that makes it easy to keep track of lots and lots
+of clutter,
+a faster, prettier, more secure, and more flexible
+successor to the [original bardak](https://github.com/maybeetree/bardak).
+For makerspaces, sports organisations,
+social centers,
+and just very cluttered households!
 
-## Database Migrations
+## Running
+
+`cargo run` then visit `http://localhost:3030`.
+Swagger UI is available.
+
+
+## For Developers
+
+### TODO
+
+- structured sqlx error?
+    - maybe client doesnt need to know but for logging?
+
+- thumbs
+    - image:
+        - [x] avif
+        - [x] jpeg
+        - [x] webp
+        - [x] jxl
+
+### Database Migrations
 
 ```
 sqlx migate add --sequential name_of_migration
 ```
 
-- `xbps-install -Syu pkg-config openssl-devel`
-
 will create `xxxx_name.up.sql` and `xxxx_name.down.sql`
 
-## TODO
+### Non-rust deps
 
-- structured sqlx error?
-    - maybe clienbt doesnt need to know but for logging?
-
-- thumbs
-    - image:
-        - avif
-        - jpeg
-        - webp
-    - <https://github.com/lamco-admin/jxl-rust-reference>
-        - jxl
+- `xbps-install -Syu pkg-config openssl-devel`
 
